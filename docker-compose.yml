@@ -1,8 +1,10 @@
 version: '3'
 
 services:
+
   db:
     image: mdillon/postgis:10-alpine
+
   ashlar-server:
     build: ./ashlar-server
     depends_on:
@@ -14,3 +16,17 @@ services:
     ports:
       - "8000:8000"
     env_file: ./ashlar-server/.env
+
+  schema-editor:
+    image: node:8.11-slim
+    working_dir: /usr/src/schema-editor
+    ports:
+      - "4567:4567"
+    volumes:
+        - ./schema-editor/app:/usr/src/schema-editor
+        # Not sure what this does yet?
+        - ./schema-editor/nginx/srv/dist:/usr/src/schema-editor/static
+        - ./schema-editor/dist:/usr/dist/schema-editor
+        # Ensure node_modules cache doesn't clash with other jobs on CI.
+        - /var/cache/project-name-node-modules:/usr/src/node_modules
+    command: yarn run dev-server
