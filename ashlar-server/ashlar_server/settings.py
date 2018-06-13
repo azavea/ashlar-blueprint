@@ -46,6 +46,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'django_extensions',
     'ashlar',
+    'ashlar_server'
 )
 
 MIDDLEWARE_CLASSES = (

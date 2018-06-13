@@ -22,17 +22,8 @@ then
         # Build containers.
         docker-compose build
 
-        # The db service is needed to run database migrations, but it doesn't
-        # reliably start up in time. Start it in the background and wait 15
-        # seconds to make sure that Postgres is available for migrations.
-        docker-compose run db
-        echo "Waiting for database service to start..."
-        sleep 30
-
-        echo "Running migrations..."
-        docker-compose run ashlar-server manage.py migrate
-
-        docker-compose stop db
+        # Run migrations.
+        docker-compose run ashlar-server manage.py wait_for_db_and_migrate
 
         # Install NPM modules.
         docker-compose run --rm --no-deps schema-editor yarn
