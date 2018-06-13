@@ -25,7 +25,7 @@ then
         # The db service is needed to run database migrations, but it doesn't
         # reliably start up in time. Start it in the background and wait 15
         # seconds to make sure that Postgres is available for migrations.
-        docker-compose run -d db
+        docker-compose run db
         echo "Waiting for database service to start..."
         sleep 30
 
