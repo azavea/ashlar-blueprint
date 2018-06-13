@@ -13,6 +13,14 @@ to build flexible-schema web applications.
 
 ## Set up
 
+Copy an environment file for the Ashlar instance (you can change some variables
+you know they won't suit your setup, but the example file should work fine for
+local development):
+
+```
+cp ./ashlar-server/.env.example ./ashlar-server/.env
+```
+
 Build the containers, run migrations, and install NPM modules with the `update`
 script:
 
