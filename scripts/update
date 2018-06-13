@@ -27,7 +27,7 @@ then
         # seconds to make sure that Postgres is available for migrations.
         docker-compose run -d db
         echo "Waiting for database service to start..."
-        sleep 15
+        sleep 30
 
         echo "Running migrations..."
         docker-compose run ashlar-server manage.py migrate
