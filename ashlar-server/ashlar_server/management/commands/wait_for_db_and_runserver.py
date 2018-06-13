@@ -10,4 +10,4 @@ class Command(WaitForDBCommand):
         '''
         Run database migrations for this app.
         '''
-        call_command('migrate')
+        call_command('runserver', '0.0.0.0:8000')

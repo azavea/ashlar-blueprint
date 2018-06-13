@@ -51,7 +51,7 @@ then
             ashlar)
                 function runserver() {
                     checkport 8000
-                    docker-compose run --service-ports ashlar-server manage.py runserver 0.0.0.0:8000
+                    docker-compose run --service-ports ashlar-server manage.py wait_for_db_and_runserver
                 }
                 ;;
 

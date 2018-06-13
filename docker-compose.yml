@@ -12,7 +12,7 @@ services:
     volumes:
       - ./ashlar-server:/opt/ashlar-server
     entrypoint: python
-    command: manage.py runserver 0.0.0.0:8000
+    command: manage.py wait_for_db_and_runserver
     ports:
       - "8000:8000"
     env_file: ./ashlar-server/.env
