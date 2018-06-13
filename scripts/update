@@ -22,8 +22,8 @@ then
         # Build containers.
         docker-compose build
 
-        # Run database migrations.
-        docker-compose run ashlar-server manage.py migrate
+        # Run migrations.
+        docker-compose run ashlar-server manage.py wait_for_db_and_migrate
 
         # Install NPM modules.
         docker-compose run --rm --no-deps schema-editor yarn

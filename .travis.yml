@@ -1,0 +1,13 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - cp ./ashlar-server/.env.example ./ashlar-server/.env
+
+install:
+  - ./scripts/update
+
+script:
+  - ./scripts/test
