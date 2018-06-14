@@ -36,7 +36,7 @@ def record_list():
 
 
 @application.route('/back/records/<uuid:uuid>')
-def record_detail():
+def record_detail(uuid):
     '''
     Display a detail view and an editor for a Record.
     '''

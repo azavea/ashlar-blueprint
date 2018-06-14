@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Record Detail{% endblock %}
+
+{% block content %}
+<div class="back">
+    <a href="/back/records">
+        &laquo; back to Records
+    </a>
+</div>
+<div class="header">
+    <h1>Record Detail</h1>
+</div>
+<div class="actions">
+    <h3>Actions</h3>
+    <ul>
+        <li>
+            <a href="#" id="edit-record">
+                Edit
+            </a>
+        </li>
+        <li>
+            <a href="#" id="delete-record">
+                Delete
+            </a>
+        </li>
+    </ul>
+</div>
+<div class="table-container">
+    <table class="detail-table" id="table">
+        <tbody>
+            <tr id="record-id-row">
+                <td><strong>ID</strong></td>
+                <td id='record-id'>77c97da4-0ea3-4899-9211-f8e1003c989d</td>
+            </tr>
+            <tr id="record-created-row">
+                <td><strong>Created</strong></td>
+                <td id='record-created'>14 June 2018, 3:41 PM</td>
+            </tr>
+            <tr id="record-modified-row">
+                <td><strong>Last modified</strong></td>
+                <td id='record-modified'> -- </td>
+            </tr>
+            <tr id="record-archived-row">
+                <td><strong>Archived</strong></td>
+                <td id="record-archived">X</td>
+            </tr>
+            <tr>
+                <td><strong>Schema ...</strong></td>
+                <td>Foo</td>
+            </tr>
+            <tr>
+                <td><strong>... columns ...</strong></td>
+                <td>Bar</td>
+            </tr>
+            <tr>
+                <td><strong>... here</strong></td>
+                <td>Baz</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}
