@@ -30,6 +30,8 @@
         </li>
     </ul>
 </div>
+<div class="edit-container" style="display:none">
+</div>
 <div class="table-container">
     <table class="detail-table" id="table">
         <tbody>
@@ -119,4 +121,32 @@
         </tbody>
     </table>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/babel">
+    $(document).ready(() => {
+        // Get the UUID of the object
+        const uuid = "{{ uuid }}";
+
+        // Enable editing RecordType
+
+        // Enable deleting RecordType
+        $('#delete-recordtype').on('click', () => {
+            if (window.confirm('Are you sure you want to delete this RecordType?')) {
+                $.ajax(`http://127.0.0.1:8000/api/recordtypes/${uuid}`, {
+                    method: 'PATCH',
+                    data: {"active": "false"}
+                }).done(() => {
+                    alert('RecordType deleted.');
+                }).fail(() => {
+                    alert('Could not delete record');
+                });
+            }
+        });
+
+        // Enable history
+    });
+</script>
+
 {% endblock %}
