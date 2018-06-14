@@ -18,15 +18,11 @@ services:
     env_file: ./ashlar-server/.env
 
   schema-editor:
-    image: node:8.11-slim
-    working_dir: /usr/src/schema-editor
+    build: ./schema-editor
+    volumes:
+      - ./schema-editor:/opt/schema-editor
+    entrypoint: gunicorn
+    command: schema_editor:app -w1 -b:4567 -kgevent
     ports:
       - "4567:4567"
-    volumes:
-        - ./schema-editor/app:/usr/src/schema-editor
-        # Not sure what this does yet?
-        - ./schema-editor/nginx/srv/dist:/usr/src/schema-editor/static
-        - ./schema-editor/dist:/usr/dist/schema-editor
-        # Ensure node_modules cache doesn't clash with other jobs on CI.
-        - /var/cache/project-name-node-modules:/usr/src/node_modules
-    command: yarn run dev-server
+    env_file: ./schema-editor/.env

@@ -5,6 +5,7 @@ services:
 
 before_install:
   - cp ./ashlar-server/.env.example ./ashlar-server/.env
+  - cp ./schema-editor/.env.example ./schema-editor/.env
 
 install:
   - ./scripts/update
