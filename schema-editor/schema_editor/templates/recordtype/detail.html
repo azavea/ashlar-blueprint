@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}RecordType - Detail{% endblock %}
+
+{% block content %}
+<div class="back">
+    <a href="/recordtypes">
+        &#8592; back to RecordTypes
+    </a>
+</div>
+<div class="header">
+    <h1>RecordType - Detail</h1>
+</div>
+<div class="table-container">
+    <table class="detail-table" id="table">
+        <tbody>
+            <tr id="recordtype-label-row">
+                <td><strong>Label</strong></td>
+                <td id='recordtype-label'>Test Type</td>
+            </tr>
+            <tr id="recordtype-plural-row">
+                <td><strong>Plural</strong></td>
+                <td id='recordtype-plural'>Test Types</td>
+            </tr>
+            <tr id="recordtype-description-row">
+                <td><strong>Description</strong></td>
+                <td id='recordtype-description'>
+                    A test RecordType. Eventually, AJAX calls will replace this.
+                </td>
+            </tr>
+            <tr id="recordtype-active-row">
+                <td>Active</td>
+                <td id='recordtype-active'>X</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

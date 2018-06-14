@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}RecordTypes - List{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>RecordTypes - List</h1>
+</div>
+<div class="table-container">
+    <table class="list-table" id="table">
+        <thead>
+            <tr>
+                <th>Label</th>
+                <th>Plural</th>
+                <th>Description</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><a href="/recordtypes/77c97da4-0ea3-4899-9211-f8e1003c989d">Test Type</a></td>
+                <td>Test Types</td>
+                <td>A test RecordType. Eventually, AJAX calls will replace this.</td>
+                <td>X</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

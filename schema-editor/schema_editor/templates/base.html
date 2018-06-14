@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+    <title>{% block title %}{% endblock %}</title>
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    {% endblock %}
+</head>
+<body>
+    {% block body %}
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+    {% endblock %}
+</body>
+{% block extra_js %}{% endblock %}
+</html>

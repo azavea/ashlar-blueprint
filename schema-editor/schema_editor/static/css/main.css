@@ -1,0 +1,11 @@
+/* main.css -- custom styles for the app. */
+.list-table,
+.detail-table,
+.list-table > tbody > tr > td,
+.list-table > thead > tr > th,
+.detail-table > tbody > tr > td {
+    /* Tables should all have borders. */
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 5px;
+}
