@@ -6,38 +6,47 @@ from app import application
 @application.route('/')
 def index():
     '''
-    Index view for the schema editor application.
+    Index view for the reference implementation.
     '''
     return render_template('index.html')
 
 
-@application.route('/recordtypes/', methods=['GET'])
+@application.route('/back/types/', methods=['GET'])
 def type_list():
     '''
     List all RecordTypes stored in Ashlar.
     '''
-    return render_template('recordtype/list.html')
+    return render_template('back/types/list.html')
 
 
-@application.route('/recordtypes/<uuid:uuid>', methods=['GET'])
+@application.route('/back/types/<uuid:uuid>', methods=['GET'])
 def type_detail(uuid):
     '''
     Display a detail view for a RecordType.
     '''
-    return render_template('recordtype/detail.html', uuid=uuid)
+    return render_template('back/types/detail.html', uuid=uuid)
 
 
-@application.route('/records/', methods=['GET'])
+@application.route('/back/records/', methods=['GET'])
 def record_list():
     '''
     Display all Records stored in Ashlar.
     '''
-    return render_template('record/list.html')
+    return render_template('back/records/list.html')
 
 
-@application.route('/records/<uuid:uuid>')
+@application.route('/back/records/<uuid:uuid>')
 def record_detail():
     '''
     Display a detail view and an editor for a Record.
     '''
-    return render_template('record/detail.html', uuid=uuid)
+    return render_template('back/records/detail.html', uuid=uuid)
+
+
+@application.route('/front')
+def frontend():
+    '''
+    Display the frontend to the reference implementation -- browse data
+    from a user's perspective.
+    '''
+    return render_template('front/index.html')

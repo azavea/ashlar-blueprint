@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}RecordTypes - List{% endblock %}
+{% block title %}Manage schemas{% endblock %}
 
 {% block content %}
 <div class="back">
@@ -9,7 +9,7 @@
     </a>
 </div>
 <div class="header">
-    <h1>RecordTypes - List</h1>
+    <h1>Manage schemas</h1>
 </div>
 <div class="actions">
     <h3>Actions</h3>
@@ -21,7 +21,8 @@
         </li>
     </ul>
 </div>
-<div class="table-container">
+<div class="list">
+    <h3>Browse all RecordTypes</h3>
     <table class="list-table" id="table">
         <thead>
             <tr>
@@ -37,8 +38,8 @@
                 <td>Test Type</td>
                 <td>A test RecordType. Eventually, AJAX calls will replace this.</td>
                 <td>X</td>
-                <td><a href="/recordtypes/77c97da4-0ea3-4899-9211-f8e1003c989d">View &raquo;</a>
-                <td><a href="/recordtypes/77c97da4-0ea3-4899-9211-f8e1003c989d?edit=true">Edit &raquo;</a>
+                <td><a href="/back/types/77c97da4-0ea3-4899-9211-f8e1003c989d">View &raquo;</a>
+                <td><a href="/back/types/77c97da4-0ea3-4899-9211-f8e1003c989d?edit=true">Edit &raquo;</a>
             </tr>
         </tbody>
     </table>
