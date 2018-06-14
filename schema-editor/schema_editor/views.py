@@ -20,28 +20,11 @@ def type_list():
 
 
 @app.route('/recordtypes/<uuid:uuid>', methods=['GET'])
-def type_edit(uuid):
+def type_detail(uuid):
     '''
-    Display a detail view and editor for a RecordType.
+    Display a detail view for a RecordType.
     '''
     return render_template('recordtype/detail.html', uuid=uuid)
-
-
-@app.route('/recordschemas/', methods=['GET'])
-def schema_list():
-    '''
-    List all RecordSchemas stored in Ashlar.
-    '''
-    pass
-    return render_template('recordschema/list.html')
-
-
-@app.route('/recordschemas/<uuid:uuid>', methods=['GET'])
-def schema_detail():
-    '''
-    Display a detail view and an editor for a RecordSchema.
-    '''
-    return render_template('recordschema/detail.html', uuid=uuid)
 
 
 @app.route('/records/', methods=['GET'])

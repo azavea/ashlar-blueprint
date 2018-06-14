@@ -5,11 +5,30 @@
 {% block content %}
 <div class="back">
     <a href="/recordtypes">
-        &#8592; back to RecordTypes
+        &laquo; back to RecordTypes
     </a>
 </div>
 <div class="header">
     <h1>RecordType - Detail</h1>
+</div>
+<div class="actions">
+    <h3>Actions</h3>
+    <ul>
+        <li>
+            <a href="#" id="edit-recordtype">
+                Edit
+            </a>
+        </li>
+        <li>
+            <a href="#" id="delete-recordtype">
+                Delete
+            </a>
+        <li>
+            <a href="#" id="view-history">
+                View history
+            </a>
+        </li>
+    </ul>
 </div>
 <div class="table-container">
     <table class="detail-table" id="table">
@@ -29,8 +48,73 @@
                 </td>
             </tr>
             <tr id="recordtype-active-row">
-                <td>Active</td>
+                <td><strong>Active</strong></td>
                 <td id='recordtype-active'>X</td>
+            </tr>
+            <tr id="recordtype-schema-row">
+                <td><strong>Current schema</strong></td>
+                <td id='recordtype-schema'>
+                    <pre>
+                        <code>
+                            {
+                                "$schema": "http://json-schema.org/draft-04/schema#",
+                                "title": "Ashlar data modelling specification",
+                                "description": "Data modelling specification for the Ashlar project",
+                                "type": "object",
+                                "definitions": {
+                                    "abstractBaseField": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string",
+                                            "format": "uuid"
+                                        },
+                                        "created": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "modified": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "required": [
+                                        "uuid",
+                                        "created",
+                                        "modified"
+                                    ]
+                                },
+                                "RecordType": {
+                                    "title": "Type",
+                                    "description": "A type for a Record, independent of any particular schema",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/abstractBaseField" }
+                                    ],
+                                    "properties": {
+                                        "label": {
+                                            "type": "string"
+                                        },
+                                        "plural_label": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "active": {
+                                            "type": "boolean",
+                                            "default": "true"
+                                        }
+                                    },
+                                    "required": [
+                                        "label",
+                                        "plural_label",
+                                        "active"
+                                    ]
+                                }
+                            }
+                        </code>
+                    </pre>
+                </td>
             </tr>
         </tbody>
     </table>

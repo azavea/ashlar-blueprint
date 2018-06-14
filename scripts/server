@@ -58,7 +58,7 @@ then
             editor)
                 function runserver() {
                     checkport 4567
-                    docker-compose run --service-ports --entrypoint="flask run --host=0.0.0.0" schema-editor
+                    docker-compose run --rm --service-ports --entrypoint="flask run --host=0.0.0.0" schema-editor
                 }
                 ;;
 
