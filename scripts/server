@@ -7,13 +7,13 @@ if [[ -n "${ASHLAR_BLUEPRINT_DEBUG}" ]]; then
 fi
 
 function usage() {
-    echo -n "Usage: $(basename "$0") {ashlar,editor}
+    echo -n "Usage: $(basename "$0") {ashlar,app}
 
 Starts servers using docker-compose.
 
 Arguments:
     - ashlar: Starts the Ashlar server instance.
-    - editor: Starts the schema editor app.
+    - app: Starts the app.
     - <none>: Start all containers.
 "
 }
@@ -51,14 +51,14 @@ then
             ashlar)
                 function runserver() {
                     checkport 8000
-                    docker-compose run --service-ports ashlar-server manage.py wait_for_db_and_runserver
+                    docker-compose run --service-ports ashlar manage.py wait_for_db_and_runserver
                 }
                 ;;
 
-            editor)
+            app)
                 function runserver() {
                     checkport 4567
-                    docker-compose run --rm --service-ports --entrypoint="flask run --host=0.0.0.0" schema-editor
+                    docker-compose run --rm --service-ports --entrypoint="flask run --host=0.0.0.0" app
                 }
                 ;;
 

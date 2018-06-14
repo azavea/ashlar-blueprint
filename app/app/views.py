@@ -1,17 +1,17 @@
 from flask import render_template
 
-from schema_editor import app
+from app import application
 
 
-@app.route('/')
+@application.route('/')
 def index():
     '''
-    Index view for the schema editor app.
+    Index view for the schema editor application.
     '''
     return render_template('index.html')
 
 
-@app.route('/recordtypes/', methods=['GET'])
+@application.route('/recordtypes/', methods=['GET'])
 def type_list():
     '''
     List all RecordTypes stored in Ashlar.
@@ -19,7 +19,7 @@ def type_list():
     return render_template('recordtype/list.html')
 
 
-@app.route('/recordtypes/<uuid:uuid>', methods=['GET'])
+@application.route('/recordtypes/<uuid:uuid>', methods=['GET'])
 def type_detail(uuid):
     '''
     Display a detail view for a RecordType.
@@ -27,7 +27,7 @@ def type_detail(uuid):
     return render_template('recordtype/detail.html', uuid=uuid)
 
 
-@app.route('/records/', methods=['GET'])
+@application.route('/records/', methods=['GET'])
 def record_list():
     '''
     Display all Records stored in Ashlar.
@@ -35,7 +35,7 @@ def record_list():
     return render_template('record/list.html')
 
 
-@app.route('/records/<uuid:uuid>')
+@application.route('/records/<uuid:uuid>')
 def record_detail():
     '''
     Display a detail view and an editor for a Record.

@@ -1,4 +1,4 @@
-# ashlar-server
+# Ashlar server
 
 Run a database server on top of Ashlar.
 

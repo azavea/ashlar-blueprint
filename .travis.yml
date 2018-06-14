@@ -4,8 +4,8 @@ services:
   - docker
 
 before_install:
-  - cp ./ashlar-server/.env.example ./ashlar-server/.env
-  - cp ./schema-editor/.env.example ./schema-editor/.env
+  - cp ./ashlar/.env.example ./ashlar/.env
+  - cp ./app/.env.example ./app/.env
 
 install:
   - ./scripts/update

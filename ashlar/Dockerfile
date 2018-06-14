@@ -12,5 +12,5 @@ COPY requirements.txt /tmp/ashlar_requirements.txt.txt
 
 RUN pip install --process-dependency-links -r /tmp/ashlar_requirements.txt.txt
 
-COPY . /opt/ashlar-server
-WORKDIR /opt/ashlar-server
+COPY . /opt/ashlar
+WORKDIR /opt/ashlar

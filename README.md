@@ -18,7 +18,7 @@ you know they won't suit your setup, but the example file should work fine for
 local development):
 
 ```
-cp ./ashlar-server/.env.example ./ashlar-server/.env
+cp ./ashlar/.env.example ./ashlar/.env
 ```
 
 Build the containers, run migrations, and install NPM modules with the `update`
@@ -38,30 +38,17 @@ Run development servers with the `server` script:
 ./scripts/server
 ```
 
-The Ashlar instance will be accessible on `localhost:8000`, and the schema
-editor app will be accessible on `localhost:4567`. Both will reload in realtime
+The Ashlar instance will be accessible on `localhost:8000`, and the reference 
+app will be accessible on `localhost:4567`. Both will reload in realtime
 as you edit files.
 
-You can choose to run only the Ashlar instance or only the schema editor app
+You can choose to run only the Ashlar instance or only the app
 by passing the `server` script an optional argument:
 
 ```console
 # Run only the Ashlar instance
 ./scripts/server ashlar
 
-# Run only the schema editor app
-./scripts/server editor
+# Run only the app
+./scripts/server app 
 ```
-
-## Add new NPM packages
-
-To add a new NPM package to the schema editor app:
-
-- Manually add the package to the app's `package.json` file, ensuring that you 
-pin it to a specific version.
-- Add the package to the `vendor` array in `webpack.common.config.js`.
-- Run `./scripts/update` to download new packages.
-- Commit the changes to the following files to git:
-    - `package.json`
-    - `yarn.lock`
-    - `webpack.common.config.js`
