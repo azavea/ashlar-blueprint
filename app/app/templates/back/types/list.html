@@ -21,6 +21,42 @@
         </li>
     </ul>
 </div>
+
+<!-- Form for creating new RecordTypes (hidden by default) -->
+<div class="new-recordtype-form-container" style="display:none;">
+    <form class="new-recordtype-form" action='#'>
+        <fieldset>
+            <legend><strong>Add new RecordType</strong></legend>
+            <fieldset>
+                <label for="new-label">Label</label>
+                <input id="new-label" name="label" type="text" placeholder="Name of this RecordType" />
+
+                <label for="new-plural-label">Plural label</label>
+                <input id="new-plural-label" name="plural_label" type="text" placeholder="The plural name for this RecordType">
+            </fieldset>
+
+            <fieldset>
+                <legend>Description</legend>
+                <textarea id="new-description"
+                        name="description"
+                        cols="30"
+                        rows="4"
+                        placeholder="Give a brief description of the data that this RecordType references" ></textarea>
+            </fieldset>
+
+            <label for="new-required">Required</label>
+            <input id="new-required" name="required" type="checkbox" />
+
+            <br/>
+            <br/>
+
+            <a href="#" type="button" class="close-recordtype-form" >Close</a>
+            <input id="submit-recordtype-form" type="submit" value="Submit" />
+        </fieldset>
+    </form>
+</div>
+
+<!-- List of existing RecordTypes -->
 <div class="list">
     <h3>Browse all RecordTypes</h3>
     <table class="list-table" id="table">
@@ -44,4 +80,44 @@
         </tbody>
     </table>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/babel">
+    $(document).ready(() => {
+        // TODO: Populate the table with existing RecordTypes.
+
+        // Enable creation of new RecordTypes.
+        $('#add-recordtype').click(function toggleRecordTypeForm() {
+            // Show or hide the new RecordType form.
+            $('.new-recordtype-form-container').toggle();
+        });
+
+        $('.close-recordtype-form').click(function hideRecordTypeForm() {
+            // Close parent form.
+            $(this).closest('.new-recordtype-form-container').hide();
+        });
+
+        $('.new-recordtype-form').submit(function submitNewRecordType(e) {
+            e.preventDefault();
+
+            let formArray = $(this).serializeArray();
+            let formData = {};
+
+            for (var elem of formArray) {
+                formData[elem.name] = elem.value;
+            }
+
+            $.ajax('http://127.0.0.1:8000/api/recordtypes/', {
+                method: 'POST',
+                data: formData
+            }).done(() => {
+                alert('RecordType created.');
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                alert('Error: Could not create record');
+                console.log(jqXHR);
+            });
+        });
+    });
+</script>
 {% endblock %}
