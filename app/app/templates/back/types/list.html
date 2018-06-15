@@ -44,11 +44,7 @@
                         placeholder="Give a brief description of the data that this RecordType references" ></textarea>
             </fieldset>
 
-            <label for="new-required">Required</label>
-            <input id="new-required" name="required" type="checkbox" />
-
-            <br/>
-            <br/>
+            <input type="hidden" name="active" value="True">
 
             <a href="#" type="button" class="close-recordtype-form" >Close</a>
             <input id="submit-recordtype-form" type="submit" value="Submit" />
@@ -56,8 +52,13 @@
     </form>
 </div>
 
+<!-- Loading dialog (initialized when the page loads) -->
+<div class="loading-dialog-container">
+    <p>Loading RecordTypes...</p>
+</div>
+
 <!-- List of existing RecordTypes -->
-<div class="list">
+<div class="recordtype-list-container" style="display:none">
     <h3>Browse all RecordTypes</h3>
     <table class="list-table" id="table">
         <thead>
@@ -73,9 +74,9 @@
             <tr>
                 <td>Test Type</td>
                 <td>A test RecordType. Eventually, AJAX calls will replace this.</td>
-                <td>X</td>
-                <td><a href="/back/types/77c97da4-0ea3-4899-9211-f8e1003c989d">View &raquo;</a>
-                <td><a href="/back/types/77c97da4-0ea3-4899-9211-f8e1003c989d?edit=true">Edit &raquo;</a>
+                <td>true</td>
+                <td><a href="/back/types/77c97da4-0ea3-4899-9211-f8e1003c989d">View &raquo;</a></td>
+                <td><a href="/back/types/77c97da4-0ea3-4899-9211-f8e1003c989d?edit=true">Edit &raquo;</a></td>
             </tr>
         </tbody>
     </table>
@@ -84,18 +85,48 @@
 
 {% block extra_js %}
 <script type="text/babel">
+    function loadRecordTypes() {
+        /* Retrieve a list of RecordTypes from the Ashlar API.
+        /  Takes no arguments, and updates the DOM/
+        */
+        // Show a loading message while the AJAX request loads.
+        $('.loading-dialog-container').show();
+        $('.recordtype-list-container').hide();
+
+        // Retrieve a list of RecordTypes.
+        $.getJSON('http://127.0.0.1:8000/api/recordtypes')
+            .done(function displayRecordTypes(rts) {
+                for (var rt of rts) {
+                    let row = `
+                        <tr>
+                            <td>${rt.label}</td>
+                            <td>${rt.description}</td>
+                            <td>${rt.active}</td>
+                            <td><a href="/back/types/${rt.uuid}">View &raquo;</a></td>
+                            <td><a href="/back/types/${rt.uuid}?edit=true">Edit &raquo;</a></td>
+                        </tr>
+                    `;
+                    $('#table > tbody').append(row);
+                }
+
+                $('.recordtype-list-container').show();
+                $('.loading-dialog-container').hide();
+          }).fail(function recordTypesFailedToLoad() {
+                // TODO: show a more descriptive error
+                $('.loading-dialog-container').html(`
+                    <p>Error: failed to load RecordTypes.</p>
+                `);
+          })
+    }
+
     $(document).ready(() => {
-        // TODO: Populate the table with existing RecordTypes.
+        // Populate the table with existing RecordTypes.
+        loadRecordTypes();
 
         // Enable creation of new RecordTypes.
         $('#add-recordtype').click(function toggleRecordTypeForm() {
             // Show or hide the new RecordType form.
             $('.new-recordtype-form-container').toggle();
-        });
-
-        $('.close-recordtype-form').click(function hideRecordTypeForm() {
-            // Close parent form.
-            $(this).closest('.new-recordtype-form-container').hide();
         });
 
         $('.new-recordtype-form').submit(function submitNewRecordType(e) {
@@ -112,11 +143,18 @@
                 method: 'POST',
                 data: formData
             }).done(() => {
-                alert('RecordType created.');
+                alert('RecordType created!');
+                loadRecordTypes();
             }).fail((jqXHR, textStatus, errorThrown) => {
                 alert('Error: Could not create record');
                 console.log(jqXHR);
+                // TODO: show a more descriptive error
             });
+        });
+
+        $('.close-recordtype-form').click(function hideRecordTypeForm() {
+            // Close parent form.
+            $(this).closest('.new-recordtype-form-container').hide();
         });
     });
 </script>
