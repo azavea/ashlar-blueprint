@@ -7,28 +7,68 @@ if [[ -n "${ASHLAR_BLUEPRINT_DEBUG}" ]]; then
 fi
 
 function usage() {
-    echo -n "Usage: $(basename "$0")
+    echo -n "Usage: $(basename "$0") {ashlar,app}
 
 Starts servers using docker-compose.
+
+Arguments:
+    - ashlar: Starts the Ashlar server instance.
+    - app: Starts the app.
+    - <none>: Start all containers.
 "
+}
+
+function checkport() {
+    # Check that a given port has no processes running on it.
+    if [[ $(netstat -nlp | grep ":::${1}") ]];
+    then
+        echo "It appears you already have a process running on port ${1}:"
+        echo
+        echo $(netstat -nlp | grep ":::${1}")
+        echo
+        echo "Terminate that process, or alter docker-compose.yml to use another port."
+        exit 1
+    fi
 }
 
 if [ "${BASH_SOURCE[0]}" = "${0}" ]
 then
-    if [ "${1:-}" = "--help" ]
+    if [ -z "$1" ]
     then
-        usage
+        # If no arguments are supplied, start all services.
+        function runserver() {
+            checkport 8000
+            checkport 4567
+            docker-compose up
+        }
     else
-        if [[ $(netstat -nlp | grep :::8000) ]];
-        then
-            echo "It appears you already have a process running on port 8000:"
-            echo
-            echo $(netstat -nlp | grep :::8000)
-            echo
-            echo "Terminate that process, or alter docker-compose.yml to run the app on another port."
-            exit 1
-        else
-            docker-compose run --service-ports ashlar-server manage.py runserver 0.0.0.0:8000
-        fi
+        case "$1" in
+            -h|--help)
+                usage
+                exit 0
+                ;;
+
+            ashlar)
+                function runserver() {
+                    checkport 8000
+                    docker-compose run --service-ports ashlar manage.py wait_for_db_and_runserver
+                }
+                ;;
+
+            app)
+                function runserver() {
+                    checkport 4567
+                    docker-compose run --rm --service-ports --entrypoint="flask run --host=0.0.0.0" app
+                }
+                ;;
+
+            *)
+                echo "ERROR: Container type '"$1"' not found."
+                echo
+                usage
+                exit 1
+                ;;
+        esac
     fi
+    runserver
 fi

@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage schemas{% endblock %}
+
+{% block content %}
+<div class="back">
+    <a href="/">
+        &laquo; back home
+    </a>
+</div>
+<div class="header">
+    <h1>Manage schemas</h1>
+</div>
+<div class="actions">
+    <h3>Actions</h3>
+    <ul>
+        <li>
+            <a href="#" id="add-recordtype">
+                Add new RecordType
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Form for creating new RecordTypes (hidden by default) -->
+<div class="new-recordtype-form-container" style="display:none;">
+    <form class="new-recordtype-form" action='#'>
+        <fieldset>
+            <legend><strong>Add new RecordType</strong></legend>
+            <fieldset>
+                <label for="new-label">Label</label>
+                <input id="new-label" name="label" type="text" placeholder="Name of this RecordType" />
+
+                <label for="new-plural-label">Plural label</label>
+                <input id="new-plural-label" name="plural_label" type="text" placeholder="The plural name for this RecordType">
+            </fieldset>
+
+            <fieldset>
+                <legend>Description</legend>
+                <textarea id="new-description"
+                        name="description"
+                        cols="30"
+                        rows="4"
+                        placeholder="Give a brief description of the data that this RecordType references" ></textarea>
+            </fieldset>
+
+            <input type="hidden" name="active" value="True">
+
+            <a href="#" type="button" class="close-recordtype-form" >Close</a>
+            <input id="submit-recordtype-form" type="submit" value="Submit" />
+        </fieldset>
+    </form>
+</div>
+
+<!-- Loading dialog (initialized when the page loads) -->
+<div class="loading-dialog-container">
+    <p>Loading RecordTypes...</p>
+</div>
+
+<!-- List of existing RecordTypes -->
+<div class="recordtype-list-container" style="display:none">
+    <h3>Browse all RecordTypes</h3>
+    <table class="list-table" id="table">
+        <thead>
+            <tr>
+                <th>Label</th>
+                <th>Description</th>
+                <th>Active</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Test Type</td>
+                <td>A test RecordType. Eventually, AJAX calls will replace this.</td>
+                <td>true</td>
+                <td><a href="/back/types/77c97da4-0ea3-4899-9211-f8e1003c989d">View &raquo;</a></td>
+                <td><a href="/back/types/77c97da4-0ea3-4899-9211-f8e1003c989d?edit=true">Edit &raquo;</a></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/babel">
+    function loadRecordTypes() {
+        /* Retrieve a list of RecordTypes from the Ashlar API.
+        /  Takes no arguments, and updates the DOM/
+        */
+        // Show a loading message while the AJAX request loads.
+        $('.loading-dialog-container').show();
+        $('.recordtype-list-container').hide();
+
+        // Retrieve a list of RecordTypes.
+        $.getJSON('http://127.0.0.1:8000/api/recordtypes')
+            .done((rts) => {
+                for (var rt of rts) {
+                    let row = `
+                        <tr>
+                            <td>${rt.label}</td>
+                            <td>${rt.description}</td>
+                            <td>${rt.active}</td>
+                            <td><a href="/back/types/${rt.uuid}">View &raquo;</a></td>
+                            <td><a href="/back/types/${rt.uuid}?edit=true">Edit &raquo;</a></td>
+                        </tr>
+                    `;
+                    $('#table > tbody').append(row);
+                }
+
+                $('.recordtype-list-container').show();
+                $('.loading-dialog-container').hide();
+          }).fail((resp) => {
+                // TODO: show a more descriptive error
+                $('.loading-dialog-container').html(`
+                    <p>Error: failed to load RecordTypes.</p>
+                `);
+          });
+    }
+
+    $(document).ready(() => {
+        // Populate the table with existing RecordTypes.
+        loadRecordTypes();
+
+        // Enable creation of new RecordTypes.
+        $('#add-recordtype').click(function toggleRecordTypeForm() {
+            // Show or hide the new RecordType form.
+            $('.new-recordtype-form-container').toggle();
+        });
+
+        // TODO: Load the schema editor.
+
+        $('.new-recordtype-form').submit(function submitNewRecordType(e) {
+            e.preventDefault();
+
+            let formArray = $(this).serializeArray();
+            let formData = {};
+
+            for (var elem of formArray) {
+                formData[elem.name] = elem.value;
+            }
+
+            $.ajax('http://127.0.0.1:8000/api/recordtypes/', {
+                method: 'POST',
+                data: formData
+            }).done(() => {
+                alert('RecordType created!');
+                loadRecordTypes();
+            }).fail((resp) => {
+                alert('Error: Could not create record');
+                console.log(resp);
+                // TODO: show a more descriptive error
+            });
+        });
+
+        $('.close-recordtype-form').click(function hideRecordTypeForm() {
+            // Close parent form.
+            $(this).closest('.new-recordtype-form-container').hide();
+        });
+    });
+</script>
+{% endblock %}

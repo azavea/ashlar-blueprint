@@ -1,16 +1,30 @@
 version: '3'
 
 services:
+
   db:
     image: mdillon/postgis:10-alpine
-  ashlar-server:
-    build: ./ashlar-server
+
+  ashlar:
+    build: ./ashlar
     depends_on:
       - db
     volumes:
-      - ./ashlar-server:/opt/ashlar-server
+      - ./ashlar:/opt/ashlar
     entrypoint: python
-    command: manage.py runserver 0.0.0.0:8000
+    command: manage.py wait_for_db_and_runserver
     ports:
       - "8000:8000"
-    env_file: ./ashlar-server/.env
+    env_file: ./ashlar/.env
+
+  app:
+    build: ./app
+    volumes:
+      - ./app:/opt/app
+    depends_on:
+      - ashlar
+    entrypoint: gunicorn
+    command: app:application -w1 -b:4567 -kgevent
+    ports:
+      - "4567:4567"
+    env_file: ./app/.env

@@ -46,9 +46,12 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'django_extensions',
     'ashlar',
+    'ashlar_server',
+    'corsheaders',
 )
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -112,3 +115,8 @@ STATIC_URL = '/static/'
 
 # Ashlar-specific global variables
 ASHLAR = { 'SRID': 4326 }
+
+# Allow CORS requests from any port on the loopback interface
+CORS_ORIGIN_REGEX_WHITELIST = (
+    r'^http://127.0.0.1:\d+',
+)

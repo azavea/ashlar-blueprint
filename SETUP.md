@@ -17,6 +17,8 @@ implementation. This doc will serve as loose notes toward a few ends:
 - Update the settings file:
     - Define `ASHLAR` global var, set `SRID = 4326`
     - Set `DEVELOP = True`
+    - SET `CORS_ORIGIN_REGEX_WHITELIST = (r'^http://127.0.0.1:\d+',
+,)`
     - In `INSTALLED_APPS`, add:
 
 ```
@@ -24,6 +26,7 @@ implementation. This doc will serve as loose notes toward a few ends:
     'rest_framework.authtoken',
     'django_extensions',
     'ashlar',
+    'corsheaders'
 ```
     
 - Set `urlpatterns = ashlar.urls.urlpatterns` in `urls.py`
