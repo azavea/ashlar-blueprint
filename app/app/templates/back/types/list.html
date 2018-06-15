@@ -95,7 +95,7 @@
 
         // Retrieve a list of RecordTypes.
         $.getJSON('http://127.0.0.1:8000/api/recordtypes')
-            .done(function displayRecordTypes(rts) {
+            .done((rts) => {
                 for (var rt of rts) {
                     let row = `
                         <tr>
@@ -111,12 +111,12 @@
 
                 $('.recordtype-list-container').show();
                 $('.loading-dialog-container').hide();
-          }).fail(function recordTypesFailedToLoad() {
+          }).fail((resp) => {
                 // TODO: show a more descriptive error
                 $('.loading-dialog-container').html(`
                     <p>Error: failed to load RecordTypes.</p>
                 `);
-          })
+          });
     }
 
     $(document).ready(() => {
@@ -128,6 +128,8 @@
             // Show or hide the new RecordType form.
             $('.new-recordtype-form-container').toggle();
         });
+
+        // TODO: Load the schema editor.
 
         $('.new-recordtype-form').submit(function submitNewRecordType(e) {
             e.preventDefault();
@@ -145,9 +147,9 @@
             }).done(() => {
                 alert('RecordType created!');
                 loadRecordTypes();
-            }).fail((jqXHR, textStatus, errorThrown) => {
+            }).fail((resp) => {
                 alert('Error: Could not create record');
-                console.log(jqXHR);
+                console.log(resp);
                 // TODO: show a more descriptive error
             });
         });

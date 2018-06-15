@@ -21,6 +21,8 @@ services:
     build: ./app
     volumes:
       - ./app:/opt/app
+    depends_on:
+      - ashlar
     entrypoint: gunicorn
     command: app:application -w1 -b:4567 -kgevent
     ports:
