@@ -28,3 +28,13 @@ services:
     ports:
       - "4567:4567"
     env_file: ./app/.env
+
+  editor:
+    build: ./schema_editor
+    depends_on:
+      - ashlar
+    volumes:
+      - ./schema_editor:/opt/schema_editor
+    ports:
+      - "9000:9000"
+      - "35731:35731"
