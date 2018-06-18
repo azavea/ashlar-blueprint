@@ -57,3 +57,7 @@ by passing the `server` script an optional argument:
 # Run only the schema editor
 ./scripts/server editor
 ```
+
+Note that the initial migrations for the Ashlar server automatically create
+an admin user with the username `admin` and the password `admin`. You can use
+these credentials to log into the schema editor and the API admin portal.

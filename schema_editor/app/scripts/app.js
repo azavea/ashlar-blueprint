@@ -71,7 +71,6 @@
         'ase.config',
         'ase.notifications',
         'ase.navbar',
-        'ase.views.geography',
         'ase.views.login',
         'ase.views.recordtype',
         'ase.views.settings',
