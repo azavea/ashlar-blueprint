@@ -145,9 +145,9 @@
                     cookieTimeout = null;
                 }
 
-                // Reload the page to return the user to a login prompt
-                var resendPostData = false;
-                $window.location.reload(resendPostData);
+                // Redirect the user to the homepage to demonstrate that they've
+                // logged out
+                $window.location.href = '/';
             });
         };
 
