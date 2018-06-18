@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from datetime import datetime
 
 from django.db import models, migrations
 from django.conf import settings
@@ -11,7 +12,8 @@ ADMIN_USER = {
     'email': settings.DEFAULT_ADMIN_EMAIL,
     'is_staff': True,
     'is_superuser': True,
-    'username': settings.DEFAULT_ADMIN_USERNAME
+    'username': settings.DEFAULT_ADMIN_USERNAME,
+    'last_login': datetime(2018, 1, 1)
 }
 
 def create_driver_groups(apps, schema_editor):

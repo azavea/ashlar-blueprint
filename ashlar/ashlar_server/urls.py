@@ -16,6 +16,13 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
+import ashlar_auth.views as auth_views
 from ashlar.urls import urlpatterns as ashlar_urlpatterns
 
+
 urlpatterns = ashlar_urlpatterns
+
+# Add authentication routes
+urlpatterns += [
+    url(r'^api-token-auth/', auth_views.obtain_auth_token),
+]

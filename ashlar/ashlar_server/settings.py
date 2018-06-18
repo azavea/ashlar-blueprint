@@ -116,6 +116,15 @@ STATIC_URL = '/static/'
 
 # Ashlar-specific global variables
 ASHLAR = { 'SRID': 4326 }
+DEFAULT_ADMIN_EMAIL = os.environ.get("ASHLAR_ADMIN_EMAIL", 'systems+ashlar@azavea.com')
+DEFAULT_ADMIN_USERNAME = os.environ.get("ASHLAR_ADMIN_USERNAME", 'admin')
+DEFAULT_ADMIN_PASSWORD = os.environ.get("ASHLAR_ADMIN_PASSWORD", 'admin')
+USER_GROUPS = {
+    'READ_ONLY': os.environ.get('ASHLAR_READ_ONLY_GROUP', 'public'),
+    'READ_WRITE': os.environ.get('ASHLAR_READ_WRITE_GROUP', 'staff'),
+    'ADMIN': os.environ.get('ASHLAR_ADMIN_GROUP', 'admin')
+}
+
 
 # Allow CORS requests from any port on the loopback interface
 CORS_ORIGIN_REGEX_WHITELIST = (
