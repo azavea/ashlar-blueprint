@@ -145,12 +145,9 @@
                     cookieTimeout = null;
                 }
 
-                // Hit logout openid endpoint after clearing cookies to log out of API session
-                // created by SSO login, too. Refreshes page for token/user cookies to clear as well.
-                // Redirects back to current location when done.
-                $window.location.href = [ASEConfig.api.hostname,
-                    '/api-auth/logout/?next=',
-                    $window.location.href].join('');
+                // Reload the page to return the user to a login prompt
+                var resendPostData = false;
+                $window.location.reload(resendPostData);
             });
         };
 
