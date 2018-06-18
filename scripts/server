@@ -22,6 +22,7 @@ will pass the command string into the corresponding service.
 
 Argument options:
     - ashlar: Starts the Ashlar server instance on port 8000.
+    - frontend: Starts the frontend on port 4567.
     - editor: Start the schema editor on port 9000.
     - <none>: Start all containers.
 "
@@ -103,6 +104,13 @@ then
                 shift 1
                 function runserver() {
                     run_ashlar_service "$@"
+                }
+                ;;
+
+            frontend)
+                function runserver() {
+                    checkport 4567
+                    docker-compose run --rm --service-ports --entrypoint="flask run --host=0.0.0.0" frontend
                 }
                 ;;
 
