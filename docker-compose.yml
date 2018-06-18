@@ -26,3 +26,5 @@ services:
     ports:
       - "9000:9000"
       - "35731:35731"
+    entrypoint: grunt
+    command: serve
