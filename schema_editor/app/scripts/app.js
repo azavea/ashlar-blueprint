@@ -33,7 +33,6 @@
 
         $rootScope.$on('$stateChangeStart', function (event, to, toParams, from, fromParams) {
 
-            /*
             if (!AuthService.isAuthenticated()) {
                 event.preventDefault();
                 // broadcast success to avoid infinite redirect
@@ -43,7 +42,6 @@
                 });
                 return;
             }
-            */
         });
 
         $rootScope.$on(AuthService.events.loggedOut, function () {

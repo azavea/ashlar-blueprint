@@ -114,6 +114,27 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Allow CORS requests from any port on the loopback interface
+CORS_ORIGIN_REGEX_WHITELIST = (
+    r'^http://127.0.0.1:\d+',
+)
+
+# Configure Django REST Framework authentication settings
+REST_FRAMEWORK = {
+    # NB: session auth must appear before token auth for both to work.
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend','rest_framework.filters.OrderingFilter'),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10,
+}
+
+
 # Ashlar-specific global variables
 ASHLAR = { 'SRID': 4326 }
 DEFAULT_ADMIN_EMAIL = os.environ.get("ASHLAR_ADMIN_EMAIL", 'systems+ashlar@azavea.com')
@@ -124,9 +145,3 @@ USER_GROUPS = {
     'READ_WRITE': os.environ.get('ASHLAR_READ_WRITE_GROUP', 'staff'),
     'ADMIN': os.environ.get('ASHLAR_ADMIN_GROUP', 'admin')
 }
-
-
-# Allow CORS requests from any port on the loopback interface
-CORS_ORIGIN_REGEX_WHITELIST = (
-    r'^http://127.0.0.1:\d+',
-)

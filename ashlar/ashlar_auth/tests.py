@@ -8,7 +8,6 @@ from rest_framework.request import Request
 from rest_framework.test import APIClient
 
 from ashlar_auth.permissions import IsOwnerOrAdmin, ReadersReadWritersWrite, IsAdminOrReadOnly
-from ashlar_auth.views import UserViewSet
 
 
 class UserViewTestCase(TestCase):

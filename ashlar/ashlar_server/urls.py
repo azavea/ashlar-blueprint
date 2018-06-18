@@ -16,13 +16,22 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
-import ashlar_auth.views as auth_views
+from rest_framework import routers
 from ashlar.urls import urlpatterns as ashlar_urlpatterns
 
+import ashlar_auth.views as auth_views
 
+
+router = routers.DefaultRouter()
+
+router.register(r'users', auth_views.UserViewSet)
+router.register(r'groups', auth_views.GroupViewSet)
+
+# Register default Ashlar URLs
 urlpatterns = ashlar_urlpatterns
 
 # Add authentication routes
 urlpatterns += [
     url(r'^api-token-auth/', auth_views.obtain_auth_token),
+    url(r'^api/', include(router.urls)),
 ]
