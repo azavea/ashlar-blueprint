@@ -4,10 +4,9 @@
     /**
      * @ngInject
      */
-    function AuthController ($scope, $state, $window, AuthService, SSOClients, ASEConfig) {
+    function AuthController ($scope, $state, $window, AuthService, ASEConfig) {
 
         $scope.auth = {};
-        $scope.ssoClients = SSOClients;
 
         $scope.alerts = [];
         $scope.addAlert = function(alertObject) {

@@ -47,6 +47,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'ashlar',
     'ashlar_server',
+    'ashlar_auth',
     'corsheaders',
 )
 

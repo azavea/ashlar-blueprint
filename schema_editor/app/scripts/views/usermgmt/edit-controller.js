@@ -23,7 +23,7 @@
             });
         }
 
-        // Helper to pull out the highest access level DRIVER group to which the user belongs
+        // Helper to pull out the highest access level group to which the user belongs
         // (User can belong to multiple groups, but pretend like they are exclusive for the form.)
         function getUserGroup() {
             var groupList = ctl.user.groups; // an array of groups to which the user belongs
