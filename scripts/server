@@ -13,7 +13,6 @@ Starts servers using docker-compose.
 
 Arguments:
     - ashlar: Starts the Ashlar server instance on port 8000.
-    - frontend: Starts the frontend on port 4567.
     - editor: Start the schema editor on port 9000.
     - <none>: Start all containers.
 "
@@ -39,7 +38,6 @@ then
         # If no arguments are supplied, start all services.
         function runserver() {
             checkport 8000
-            checkport 4567
             checkport 9000
             docker-compose up
         }
@@ -54,13 +52,6 @@ then
                 function runserver() {
                     checkport 8000
                     docker-compose run --service-ports ashlar manage.py wait_for_db_and_runserver
-                }
-                ;;
-
-            frontend)
-                function runserver() {
-                    checkport 4567
-                    docker-compose run --rm --service-ports --entrypoint="flask run --host=0.0.0.0" frontend
                 }
                 ;;
 

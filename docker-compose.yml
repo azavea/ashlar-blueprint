@@ -17,18 +17,6 @@ services:
       - "8000:8000"
     env_file: ./ashlar/.env
 
-  frontend:
-    build: ./frontend
-    volumes:
-      - ./frontend:/opt/frontend
-    depends_on:
-      - ashlar
-    entrypoint: gunicorn
-    command: app:application -w1 -b:4567 -kgevent
-    ports:
-      - "4567:4567"
-    env_file: ./frontend/.env
-
   editor:
     build: ./schema_editor
     depends_on:
