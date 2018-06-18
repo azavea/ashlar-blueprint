@@ -17,17 +17,17 @@ services:
       - "8000:8000"
     env_file: ./ashlar/.env
 
-  app:
-    build: ./app
+  frontend:
+    build: ./frontend
     volumes:
-      - ./app:/opt/app
+      - ./frontend:/opt/frontend
     depends_on:
       - ashlar
     entrypoint: gunicorn
     command: app:application -w1 -b:4567 -kgevent
     ports:
       - "4567:4567"
-    env_file: ./app/.env
+    env_file: ./frontend/.env
 
   editor:
     build: ./schema_editor

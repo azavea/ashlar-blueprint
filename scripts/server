@@ -7,13 +7,13 @@ if [[ -n "${ASHLAR_BLUEPRINT_DEBUG}" ]]; then
 fi
 
 function usage() {
-    echo -n "Usage: $(basename "$0") {ashlar,app}
+    echo -n "Usage: $(basename "$0") {ashlar,frontend}
 
 Starts servers using docker-compose.
 
 Arguments:
     - ashlar: Starts the Ashlar server instance.
-    - app: Starts the app.
+    - frontend: Starts the frontend.
     - <none>: Start all containers.
 "
 }
@@ -55,10 +55,10 @@ then
                 }
                 ;;
 
-            app)
+            frontend)
                 function runserver() {
                     checkport 4567
-                    docker-compose run --rm --service-ports --entrypoint="flask run --host=0.0.0.0" app
+                    docker-compose run --rm --service-ports --entrypoint="flask run --host=0.0.0.0" frontend
                 }
                 ;;
 
