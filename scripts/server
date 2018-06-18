@@ -7,13 +7,14 @@ if [[ -n "${ASHLAR_BLUEPRINT_DEBUG}" ]]; then
 fi
 
 function usage() {
-    echo -n "Usage: $(basename "$0") {ashlar,frontend}
+    echo -n "Usage: $(basename "$0") {ashlar,frontend,editor}
 
 Starts servers using docker-compose.
 
 Arguments:
-    - ashlar: Starts the Ashlar server instance.
-    - frontend: Starts the frontend.
+    - ashlar: Starts the Ashlar server instance on port 8000.
+    - frontend: Starts the frontend on port 4567.
+    - editor: Start the schema editor on port 9000.
     - <none>: Start all containers.
 "
 }
@@ -39,6 +40,7 @@ then
         function runserver() {
             checkport 8000
             checkport 4567
+            checkport 9000
             docker-compose up
         }
     else
@@ -62,6 +64,12 @@ then
                 }
                 ;;
 
+            editor)
+                function runserver() {
+                    checkport 9000
+                    docker-compose run --rm --service-ports editor serve
+                }
+                ;;
             *)
                 echo "ERROR: Container type '"$1"' not found."
                 echo
