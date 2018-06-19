@@ -3,7 +3,7 @@
 
     /* ngInject */
     function Records($resource, ASEConfig) {
-        var baseUrl = WebConfig.api.hostname + '/api/records/';
+        var baseUrl = ASEConfig.api.hostname + '/api/records/';
         return $resource(baseUrl + ':id/', {
             id: '@uuid',
             archived: 'False' // Note: a regular 'false' boolean doesn't filter properly in DRF

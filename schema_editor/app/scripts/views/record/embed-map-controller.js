@@ -34,7 +34,7 @@
             }
 
             // set the base layer
-            baseLayer = baseMaps[0];
+            var baseLayer = baseMaps[0];
             ctl.map.addLayer(baseLayer.layer);
 
             if (ctl.isEditable) {

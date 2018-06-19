@@ -53,7 +53,7 @@
         'json-editor',
         'ui.bootstrap',
         'ui.router',
-        'uuid'
+        'angular-uuid'
     ]).config(StateConfig);
 
 })();

@@ -3,7 +3,7 @@
 
     /* ngInject */
     function RecordAddEditController($log, $scope, $state, $stateParams, $window, $q, $timeout,
-                                     $translate, uuid4, AuthService, JsonEditorDefaults,
+                                     $translate, uuid, AuthService, JsonEditorDefaults,
                                      Notifications, Records, RecordSchemas,
                                      RecordTypes, ASEConfig) {
         var ctl = this;
@@ -280,7 +280,7 @@
             var changed = false;
             _.each(obj, function(propertyValue, propertyName) {
                 if (propertyName === '_localId' && !propertyValue) {
-                    obj._localId = uuid4.generate();
+                    obj._localId = uuid.v4();
                     changed = true;
                 } else if (propertyValue instanceof Array) {
                     _.each(propertyValue, function(item) {

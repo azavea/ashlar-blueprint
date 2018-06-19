@@ -2,7 +2,7 @@
     'use strict';
 
     /* ngInject */
-    function RecordListController($scope, $rootScope, $log, $modal, $state, uuid4, AuthService,
+    function RecordListController($scope, $rootScope, $log, $modal, $state, AuthService,
                                   Notifications, RecordSchemas, Records, ASEConfig) {
         var ctl = this;
         ctl.currentOffset = 0;
@@ -52,7 +52,7 @@
             var params = {
                 offset: newOffset,
                 limit: ASEConfig.record.limit
-            }
+            };
 
             return Records.get(params).$promise
             .then(function(records) {

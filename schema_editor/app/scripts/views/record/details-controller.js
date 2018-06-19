@@ -31,7 +31,6 @@
                     return RecordSchemas.get({ id: ctl.recordType.current_schema }).$promise
                         .then(function(recordSchema) { ctl.recordSchema = recordSchema; });
                     /* jshint camelcase: true */
-                    });
                 });
         }
     }
