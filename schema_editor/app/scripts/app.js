@@ -73,6 +73,7 @@
         'ase.navbar',
         'ase.views.login',
         'ase.views.recordtype',
+        'ase.views.record',
         'ase.views.settings',
         'ase.views.usermgmt',
         'ase.resources',

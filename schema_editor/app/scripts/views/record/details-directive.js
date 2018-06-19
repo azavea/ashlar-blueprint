@@ -14,6 +14,6 @@
     }
 
     angular.module('ase.views.record')
-    .directive('RecordDetails', RecordDetails);
+    .directive('recordDetails', RecordDetails);
 
 })();

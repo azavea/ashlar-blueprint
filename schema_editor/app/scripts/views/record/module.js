@@ -49,7 +49,7 @@
         'ase.schemas',
         'ase.map-layers',
         'datetimepicker',
-        'Leaflet',
+        'leaflet-directive',
         'json-editor',
         'ui.bootstrap',
         'ui.router',

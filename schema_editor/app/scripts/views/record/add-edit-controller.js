@@ -3,7 +3,7 @@
 
     /* ngInject */
     function RecordAddEditController($log, $scope, $state, $stateParams, $window, $q, $timeout,
-                                     $translate, uuid, AuthService, JsonEditorDefaults,
+                                     uuid, AuthService, JsonEditorDefaults,
                                      Notifications, Records, RecordSchemas,
                                      RecordTypes, ASEConfig) {
         var ctl = this;
@@ -70,7 +70,7 @@
             }
 
             schemaPromise.then(function () {
-                $translate.onReady(onSchemaReady);
+                onSchemaReady();
             });
 
             $scope.$on('$destroy', function() {
@@ -198,7 +198,7 @@
                     /* jshint camelcase: true */
                         .then(function(recordSchema) { ctl.recordSchema = recordSchema; });
                 } else {
-                    ctl.error = $translate.instant('ERRORS.RECORD_SCHEMA_LOAD');
+                    ctl.error = 'Unable to load record schema.';
                     return $q.reject(ctl.error);
                 }
             });
@@ -238,16 +238,6 @@
 
         function onSchemaReady() {
             fixEmptyFields();
-
-            // Add json-editor translations for button titles (shown on hover)
-            JsonEditorDefaults.addTranslation('button_add_row_title',
-                                              $translate.instant('RECORD.BUTTON_ADD_ROW_TITLE'));
-            JsonEditorDefaults.addTranslation('button_collapse',
-                                              $translate.instant('RECORD.BUTTON_COLLAPSE'));
-            JsonEditorDefaults.addTranslation('button_delete_row_title',
-                                              $translate.instant('RECORD.BUTTON_DELETE_ROW_TITLE'));
-            JsonEditorDefaults.addTranslation('button_expand',
-                                              $translate.instant('RECORD.BUTTON_EXPAND'));
 
             /* jshint camelcase: false */
             ctl.editor = {
@@ -321,18 +311,17 @@
             angular.forEach(required, function(value, fieldName) {
                 if (!value) {
                     // message formatted to match errors from json-editor
-                    ctl.constantFieldErrors[fieldName] = fieldName + ': ' +
-                        $translate.instant('ERRORS.VALUE_REQUIRED');
+                    ctl.constantFieldErrors[fieldName] = fieldName + ': Value required';
                 }
             });
 
             if (ctl.isSecondary && ctl.occurredFrom && ctl.occurredTo &&
                     ctl.occurredFrom > ctl.occurredTo) {
-                ctl.constantFieldErrors.occurredTo = $translate.instant('ERRORS.END_BEFORE_START');
+                ctl.constantFieldErrors.occurredTo = 'End date cannot be before start date.';
             }
 
             if (ctl.occurredFrom && ctl.occurredFrom > new Date()) {
-                ctl.constantFieldErrors.occurred = $translate.instant('ERRORS.FUTURE_DATES');
+                ctl.constantFieldErrors.occurred = 'Date and time must be in the past.';
             }
 
             // make field errors falsy if empty, for partial to check easily
@@ -366,7 +355,7 @@
         }
 
         function onDeleteClicked() {
-            if ($window.confirm($translate.instant('RECORD.REALLY_DELETE'))) {
+            if ($window.confirm('Do you really want to delete? This cannot be undone.')) {
                 var patchData = {
                     archived: true,
                     uuid: ctl.record.uuid
@@ -379,7 +368,7 @@
                     $log.debug('Error while deleting record:', error);
                     showErrorNotification([
                         '<p>',
-                        $translate.instant('ERRORS.CREATING_RECORD'),
+                        'Error creating record',
                         '</p><p>',
                         error.status,
                         ': ',
@@ -464,7 +453,7 @@
                 }
             }, function (error) {
                 $log.debug('Error while creating record:', error);
-                var errorMessage = '<p>' + $translate.instant('ERRORS.CREATING_RECORD') + '</p><p>';
+                var errorMessage = '<p>Error creating record</p><p>';
                 if (error.data) {
                     errorMessage += _.flatten(_.values(error.data)).join('<br>');
                 } else {
@@ -479,7 +468,7 @@
         function showErrorNotification(message) {
             Notifications.show({
                 displayClass: 'alert-danger',
-                header: $translate.instant('ERRORS.RECORD_NOT_SAVED'),
+                header: 'Record Not Saved',
                 html: message
             });
         }
