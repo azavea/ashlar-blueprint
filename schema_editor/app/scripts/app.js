@@ -79,8 +79,6 @@
         'ase.resources',
         'ase.localization',
         'ase.details',
-        'ui.router',
-        'LocalStorageModule'
     ])
     .config(DefaultRoutingConfig)
     .config(LocalStorageConfig)
