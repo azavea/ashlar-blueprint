@@ -3,7 +3,8 @@
 
     /* ngInject */
     function RecordListController($scope, $rootScope, $log, $modal, $state, AuthService,
-                                  Notifications, RecordSchemas, Records, ASEConfig) {
+                                  Notifications, RecordSchemas, Records, ASEConfig,
+                                  $stateParams, $q, RecordTypes) {
         var ctl = this;
         ctl.currentOffset = 0;
         ctl.numRecordsPerPage = ASEConfig.record.limit;
@@ -19,19 +20,31 @@
         function init() {
             ctl.isInitialized = false;
             ctl.userCanWrite = AuthService.hasWriteAccess();
-            loadRecordSchema();
+
+            if (typeof($stateParams.recordtype !== 'undefined')) {
+                var recordTypeUuid = $stateParams.recordtype;
+                loadRecordSchema(recordTypeUuid);
+            } else {
+                ctl.error = 'Unable to load record schema: no RecordType specified.';
+                return $q.reject(ctl.error);
+            }
         }
 
-        function loadRecordSchema() {
-            /* jshint camelcase: false */
-            var currentSchemaId = ctl.recordType.current_schema;
-            /* jshint camelcase: true */
-
-            return RecordSchemas.get({id: currentSchemaId})
-                .then(function(recordSchema) {
-                    ctl.recordSchema = recordSchema;
-                    return;
-                }).then(onSchemaLoaded);
+        function loadRecordSchema(recordTypeUuid) {
+            RecordTypes.query({ uuid: recordTypeUuid }).$promise.then(function (result) {
+                var recordType = result[0];
+                if (recordType) {
+                    ctl.recordType = recordType;
+                    /* jshint camelcase: false */
+                    return RecordSchemas.get({ id: ctl.recordType.current_schema }).$promise
+                    /* jshint camelcase: true */
+                        .then(function(recordSchema) { ctl.recordSchema = recordSchema; })
+                        .then(onSchemaLoaded);
+                } else {
+                    ctl.error = 'Unable to load record schema.';
+                    return $q.reject(ctl.error);
+                }
+            });
         }
 
         /*

@@ -19,7 +19,7 @@
             limit: 50
         },
         localization: {
-            timeZone: 'america/philadelphia'
+            timeZone: 'America/New_York'
         }
     };
 

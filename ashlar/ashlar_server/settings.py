@@ -149,3 +149,4 @@ USER_GROUPS = {
     'READ_WRITE': os.environ.get('ASHLAR_READ_WRITE_GROUP', 'staff'),
     'ADMIN': os.environ.get('ASHLAR_ADMIN_GROUP', 'admin')
 }
+FORECAST_IO_API_KEY = os.environ.get("FORECAST_IO_API_KEY", '')
