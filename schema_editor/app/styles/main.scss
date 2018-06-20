@@ -4,6 +4,7 @@ $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/boots
 // endbower
 
 @import "layout";
+@import "mixins";
 
 @import "partials/json-editor";
 @import "partials/nav";
@@ -12,3 +13,6 @@ $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/boots
 @import "partials/add-new";
 @import "partials/edit-user";
 @import "partials/notifications";
+@import "partials/table-view";
+@import "partials/incident-report";
+

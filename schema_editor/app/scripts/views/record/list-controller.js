@@ -39,7 +39,8 @@
                     return RecordSchemas.get({ id: ctl.recordType.current_schema }).$promise
                     /* jshint camelcase: true */
                         .then(function(recordSchema) { ctl.recordSchema = recordSchema; })
-                        .then(onSchemaLoaded);
+                        .then(onSchemaLoaded)
+                        .then(loadRecords);
                 } else {
                     ctl.error = 'Unable to load record schema.';
                     return $q.reject(ctl.error);

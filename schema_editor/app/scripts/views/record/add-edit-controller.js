@@ -127,6 +127,7 @@
             return Records.get({ id: $stateParams.recorduuid })
                 .$promise.then(function(record) {
                     ctl.record = record;
+                    console.log(record);
 
                     /* jshint camelcase: false */
                     ctl.occurredFrom = ctl.record.occurred_from;

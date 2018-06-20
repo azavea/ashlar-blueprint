@@ -49,6 +49,7 @@ INSTALLED_APPS = (
     'ashlar_server',
     'ashlar_auth',
     'corsheaders',
+    'rest_framework_gis',
 )
 
 MIDDLEWARE_CLASSES = (
