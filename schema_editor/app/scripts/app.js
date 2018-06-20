@@ -77,6 +77,7 @@
         'ase.views.settings',
         'ase.views.usermgmt',
         'ase.resources',
+        'ase.localization',
         'ui.router',
         'LocalStorageModule'
     ])

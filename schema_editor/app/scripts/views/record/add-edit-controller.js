@@ -5,7 +5,7 @@
     function RecordAddEditController($log, $scope, $state, $stateParams, $window, $q, $timeout,
                                      uuid, AuthService, JsonEditorDefaults,
                                      Notifications, Records, RecordSchemas,
-                                     RecordTypes, ASEConfig) {
+                                     RecordTypes, DateLocalization) {
         var ctl = this;
         var editorData = null;
         var bbox = null;
@@ -114,37 +114,11 @@
             constantFieldsValidationErrors();
         }
 
-        /**
-         * Since the date and time pickers rely on the browser's local timezone with
-         * no way to override, we need to modify the occurred datetime before it gets
-         * to the pickers. We want to show the datetime in the configured local tz,
-         * so we need to apply offsets for both the browser's tz and the configured
-         * local tz so it shows up as desired. This also needs to be undone before
-         * sending data over to the server when saving this request. This is a hack,
-         * but there's no clearly better way around it.
-         *
-         * @param {bool} reverse True if the fix is being reversed out of for saving purposes
-         */
-        function convertNonTimezoneDate(date, reverse) {
-            var dateDT = new Date(date);
-            var browserTZOffset = dateDT.getTimezoneOffset();
-            var configuredTZOffset = moment(dateDT).tz(ASEConfig.localization.timeZone)._offset;
-            // Note that the native js getTimezoneOffset returns the opposite of what
-            // you'd expect: i.e. EST which is UTC-5 gets returned as positive 5.
-            // The `moment` method of returning the offset would return this as a -5.
-            // Therefore if the browser tz is the same as the configured local tz,
-            // the following offset will cancel out and return zero.
-            var offset = (browserTZOffset + configuredTZOffset) * (reverse ? -1 : +1);
-
-            dateDT.setMinutes(dateDT.getMinutes() + offset);
-            return dateDT;
-        }
-
         /* Apply timezone fixes to the picker components */
         function fixOccurredDTForPickers(reverse) {
-            ctl.occurredFrom = convertNonTimezoneDate(ctl.occurredFrom, reverse);
+            ctl.occurredFrom = DateLocalization.convertNonTimezoneDate(ctl.occurredFrom, reverse);
             if (ctl.occurredTo) {
-                ctl.occurredTo = convertNonTimezoneDate(ctl.occurredTo, reverse);
+                ctl.occurredTo = DateLocalization.convertNonTimezoneDate(ctl.occurredTo, reverse);
             }
         }
 
