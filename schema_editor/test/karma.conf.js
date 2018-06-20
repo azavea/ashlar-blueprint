@@ -47,7 +47,6 @@ module.exports = function(config) {
       'bower_components/lodash/lodash.js',
       'bower_components/moment-timezone/builds/moment-timezone-with-data-2010-2020.js',
       'bower_components/leaflet/dist/leaflet-src.js',
-<<<<<<< 2e0180c1c97a2f52423216c866984fe103145b75
       'bower_components/world-calendars/jquery.plugin.js',
       'bower_components/world-calendars/jquery.calendars.js',
       'bower_components/world-calendars/jquery.calendars.plus.js',

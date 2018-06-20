@@ -149,7 +149,7 @@
         /* Loads the right schema:
          * - If there's a record, loads the latest schema for the record's type
          *   (edit mode)
-         * - Otherwise, checks for a record type that can be used to find aa schema
+         * - Otherwise, checks for a record type that can be used to find a schema
          *   (add mode)
          * - If no record type loads (e.g. if someone has navigated to the view
          *   improperly), sets an error and returns a rejected promise.
