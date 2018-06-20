@@ -59,14 +59,11 @@
             var schemaPromise;
             if ($stateParams.recorduuid) {
                 schemaPromise = loadRecord().then(loadRecordSchema);
-            } else {
-                schemaPromise = loadRecordSchema();
+            } else if ($stateParams.recordtype) {
+                schemaPromise = loadRecordSchema($stateParams.recordtype);
                 // Besides being friendly, setting a default works around this bug:
                 // https://github.com/angular-ui/bootstrap/issues/1114
-                ctl.occurredFrom = new Date();
-                if (ctl.isSecondary) {
-                    ctl.occurredTo = ctl.occurredFrom;
-                }
+                ctl.occurredFrom = ctl.occuredTo = new Date();
             }
 
             schemaPromise.then(function () {
@@ -176,25 +173,38 @@
         }
 
         /* Loads the right schema:
-         * -If there's a record, loads the latest schema for the record's type, checking whether
-         *  it matches the secondary type and setting ctl.isSecondary to true if so.
-         * -Othersise, loads either the latest schema for either the primary or the secondary
-         *  record type, depending on whether ctl.isSecondary is true.
-         * If no record type loads (e.g. if someone is trying to add a secondary record but has
-         * no secondary recordType), sets an error and returns a rejected promise.
+         * - If there's a record, loads the latest schema for the record's type
+         *   (edit mode)
+         * - Otherwise, checks for a record type that can be used to finda schema
+         *   (add mode)
+         * - If no record type loads (e.g. if someone has navigated to the view
+         *   improperly), sets an error and returns a rejected promise.
          */
-        function loadRecordSchema() {
-            var typePromise = RecordTypes.query({ record: ctl.record.uuid }).$promise
-                .then(function (result) {
-                    var recordType = result[0];
-                    ctl.isSecondary = true;
-                    return recordType;
-                });
-            return typePromise.then(function (recordType) {
+        function loadRecordSchema(recordTypeUuid) {
+            var queryObj = {};
+            if (ctl.record) {
+                // If there's a record loaded, get its schema
+                queryObj.record = ctl.record.uuid;
+
+            } else if (typeof(recordTypeUuid !== 'undefined')) {
+                // The user is adding a new record, so retrieve the schema for
+                // the record type that they selected
+                queryObj.uuid = recordTypeUuid;
+
+            } else {
+                ctl.error = 'Unable to load record schema: no Record or RecordType specified.';
+                return $q.reject(ctl.error);
+            }
+
+            return RecordTypes.query(queryObj).$promise.then(function (result) {
+                // TODO: Remove secondary logic. For now, default to false.
+                ctl.isSecondary = false;
+
+                var recordType = result[0];
                 if (recordType) {
                     ctl.recordType = recordType;
                     /* jshint camelcase: false */
-                    return RecordSchemas.get({ id: ctl.recordType.current_schema })
+                    return RecordSchemas.get({ id: ctl.recordType.current_schema }).$promise
                     /* jshint camelcase: true */
                         .then(function(recordSchema) { ctl.recordSchema = recordSchema; });
                 } else {
@@ -203,8 +213,6 @@
                 }
             });
         }
-
-
 
         /*
          * Ensures each object in the record contains all appropriate properties available

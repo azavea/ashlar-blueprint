@@ -6,37 +6,31 @@
         $stateProvider.state('record', {
             abstract: true,
             url: '',
+            parent: 'sidebar',
             template: '<ui-view></ui-view>'
         });
         $stateProvider.state('record.add', {
-            url: '/add',
+            url: '/record/add/:recordtype',
             template: '<record-add-edit></record-add-edit>',
-            label: 'NAV.ADD_A_RECORD',
+            label: 'Add a Record',
             showInNavbar: false
-        });
-        $stateProvider.state('record.addSecondary', {
-            url: '/addsecondary',
-            template: '<record-add-edit></record-add-edit>',
-            label: 'NAV.ADD_A_RECORD',
-            showInNavbar: false,
-            secondary: true
-        });
-        $stateProvider.state('record.list', {
-            url: '/list',
-            template: '<record-list></record-list>',
-            label: 'NAV.RECORD_LIST',
-            showInNavbar: true
         });
         $stateProvider.state('record.edit', {
-            url: '/record/:recorduuid/edit',
+            url: '/record/edit/:recorduuid',
             template: '<record-add-edit></record-add-edit>',
-            label: 'NAV.EDIT_A_RECORD',
+            label: 'Edit a Record',
             showInNavbar: false
         });
+        $stateProvider.state('record.list', {
+            url: '/record/list/:recordtype',
+            template: '<record-list></record-list>',
+            label: 'View all Records',
+            showInNavbar: true
+        });
         $stateProvider.state('record.details', {
-            url: '/record/:recorduuid/details',
+            url: '/record/details/:recorduuid',
             template: '<record-details></record-details>',
-            label: 'NAV.RECORD_DETAILS',
+            label: 'Record Details',
             showInNavbar: false
         });
     }
@@ -49,7 +43,7 @@
         'ase.schemas',
         'ase.map-layers',
         'datetimepicker',
-        'leaflet-directive',
+        'Leaflet',
         'json-editor',
         'ui.bootstrap',
         'ui.router',
