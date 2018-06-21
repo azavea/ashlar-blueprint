@@ -15,15 +15,15 @@ source "${DIR}/_config.sh"
 source "${DIR}/_init_db.sh"
 
 function usage() {
-    echo -n "Usage: $(basename "$0") {ashlar,editor} [CMD]
+    echo -n "Usage: $(basename "$0") {ashlar,editor,frontend} [CMD]
 
 Starts servers using docker-compose. If an argument is specified, [CMD]
 will pass the command string into the corresponding service.
 
 Argument options:
     - ashlar: Starts the Ashlar server instance on port 8000.
-    - frontend: Starts the frontend on port 4567.
     - editor: Start the schema editor on port 9000.
+    - frontend: Starts the frontend on port 4567.
     - <none>: Start all containers.
 "
 }
@@ -47,15 +47,26 @@ function run_ashlar_service() {
     #
     # Run the Ashlar server instance.
     #
-    checkport 8000
-    init_db
-    if [ $# -eq 0 ];
+    if [ $(docker-compose ps | grep "blueprint_ashlar" | grep -q "Up" && echo "$?" || echo 1) -eq 0 ];
     then
-        # No arguments -- default to running a Django dev server
-        docker-compose up ashlar
+        echo "Ashlar service is already running."
     else
-        # User passed in arguments -- run their command
-        docker-compose run --rm --service-ports ashlar "$@"
+        checkport 8000
+        init_db
+        if [ $# -eq 0 ];
+        then
+            # No arguments -- default to running a Django dev server
+            docker-compose up ashlar
+        else
+            if [ "$1" = "detached"  ];
+            then
+                # Run this service in the background
+                docker-compose up -d ashlar
+            else
+                # User passed in arguments -- run their command
+                docker-compose run --rm --service-ports ashlar "$@"
+            fi
+        fi
     fi
 }
 
@@ -63,18 +74,44 @@ function run_editor_service() {
     #
     # Run the schema editor app.
     #
-    checkport 8000
-    init_db
-    docker-compose up -d ashlar
+    run_ashlar_service detached
     checkport 9000
     if [ $# -eq 0 ];
     then
         # No arguments -- default to running a Grunt server
         docker-compose up editor
     else
-        # User passed in arguments -- run their command
-        docker-compose run --rm --service-ports editor "$@"
+        if [ "$1" = "detached"  ];
+        then
+            # Run this service in the background
+            docker-compose up -d editor
+        else
+            # User passed in arguments -- run their command
+            docker-compose run --rm --service-ports editor "$@"
+        fi
     fi
+}
+
+function run_frontend_service() {
+    #
+    # Run the frontend app.
+    #
+    run_ashlar_service detached
+    checkport 4567
+    if [ $# -eq 0 ];
+    then
+        # No arguments -- default to running a Flask dev server
+        docker-compose run --rm --service-ports --entrypoint="flask run --host=0.0.0.0" frontend
+    else
+        if [ "$1" = "detached"  ];
+        then
+            # Run this service in the background
+            docker-compose up -d frontend
+        else
+            docker-compose run --rm --service-ports frontend "$@"
+        fi
+    fi
+
 }
 
 function run_all_services() {
@@ -82,7 +119,8 @@ function run_all_services() {
     # Run all services in docker-compose.yml (the managed equivalent of
     # `docker-compose up`).
     #
-    run_editor_service
+    run_editor_service detached
+    run_frontend_service
 }
 
 if [ "${BASH_SOURCE[0]}" = "${0}" ]
@@ -107,19 +145,20 @@ then
                 }
                 ;;
 
-            frontend)
-                function runserver() {
-                    checkport 4567
-                    docker-compose run --rm --service-ports --entrypoint="flask run --host=0.0.0.0" frontend
-                }
-                ;;
-
             editor)
                 shift 1
                 function runserver() {
                     run_editor_service "$@"
                 }
                 ;;
+
+            frontend)
+                shift 1
+                function runserver() {
+                    run_frontend_service "$@"
+                }
+                ;;
+
             *)
                 echo "ERROR: Container type '"$1"' not found."
                 echo
