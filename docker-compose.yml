@@ -14,7 +14,7 @@ services:
     entrypoint: python
     command: manage.py runserver 0.0.0.0:8000
     ports:
-      - "127.0.0.1:8000:8000"
+      - "8000:8000"
     env_file: ./ashlar/.env
     environment:
       - PYTHONUNBUFFERED=0  # Do not buffer output (allows Docker to stream stdout)
@@ -42,3 +42,10 @@ services:
     ports:
       - "4567:4567"
     env_file: ./frontend/.env
+
+  loaddata:
+    build: ./scripts/sample_data
+    volumes:
+      - ./scripts/sample_data:/opt/loaddata
+    depends_on:
+      - ashlar

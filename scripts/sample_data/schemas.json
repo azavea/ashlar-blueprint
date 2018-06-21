@@ -1,0 +1,50 @@
+{
+    "schema": {
+        "description": "",
+        "title": "",
+        "plural_title": "",
+        "definitions": {
+            "driverIncidentDetails": {
+                "multiple": false,
+                "description": "Details for Incident",
+                "title": "Incident Details",
+                "required": [
+                    "_localId"
+                ],
+                "plural_title": "Incident Details",
+                "propertyOrder": 0,
+                "details": true,
+                "definitions": {},
+                "type": "object",
+                "properties": {
+                    "Extra description": {
+                        "isSearchable": false,
+                        "propertyOrder": 0,
+                        "type": "string",
+                        "fieldType": "text",
+                        "format": "textarea"
+                    },
+                    "_localId": {
+                        "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+                        "type": "string",
+                        "options": {
+                            "hidden": true
+                        }
+                    }
+                }
+            }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {
+            "driverIncidentDetails": {
+                "options": {
+                    "collapsed": true
+                },
+                "$ref": "#/definitions/driverIncidentDetails"
+            }
+        }
+    },
+    "version": 1,
+    "next_version": null
+}
