@@ -27,9 +27,6 @@ def add_non_admin_users_to_public_group(apps, schema_editor):
     except (User.DoesNotExist, Group.DoesNotExist):
         pass
 
-def drop_default_permissions(apps, schema_editor):
-    pass # to avoid an error on backwards migrations
-
 
 class Migration(migrations.Migration):
     dependencies = [
@@ -37,6 +34,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(add_admin_user_to_admin_group, drop_default_permissions),
-        migrations.RunPython(add_non_admin_users_to_public_group, drop_default_permissions),
+        migrations.RunPython(add_admin_user_to_admin_group, migrations.RunPython.noop),
+        migrations.RunPython(add_non_admin_users_to_public_group, migrations.RunPython.noop),
     ]
