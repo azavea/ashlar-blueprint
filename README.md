@@ -53,6 +53,16 @@ by passing the `server` script an optional argument:
 ./scripts/server editor
 ```
 
+You can also run custom commands in the containers using the `server` script:
+
+```console
+# Run a custom command in the Ashlar instance (python entrypoint)
+./scripts/server ashlar manage.py runserver
+
+# Run a custom command in the schema editor (grunt entrypoint)
+./scripts/server editor watch
+```
+
 Note that the initial migrations for the Ashlar server automatically create
 an admin user with the username `admin` and the password `admin`. You can use
 these credentials to log into the schema editor and the API admin portal.

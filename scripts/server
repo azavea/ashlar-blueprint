@@ -6,12 +6,17 @@ if [[ -n "${ASHLAR_BLUEPRINT_DEBUG}" ]]; then
     set -x
 fi
 
+# Import database methods from the directory path of this script
+CURDIR="${BASH_SOURCE%/*}"
+. "${CURDIR}/_init_db.sh"
+
 function usage() {
-    echo -n "Usage: $(basename "$0") {ashlar,frontend,editor}
+    echo -n "Usage: $(basename "$0") {ashlar,editor} [CMD]
 
-Starts servers using docker-compose.
+Starts servers using docker-compose. If an argument is specified, [CMD]
+will pass the command string into the corresponding service.
 
-Arguments:
+Argument options:
     - ashlar: Starts the Ashlar server instance on port 8000.
     - editor: Start the schema editor on port 9000.
     - <none>: Start all containers.
@@ -19,7 +24,9 @@ Arguments:
 }
 
 function checkport() {
+    #
     # Check that a given port has no processes running on it.
+    #
     if [[ $(netstat -nlp | grep ":::${1}") ]];
     then
         echo "It appears you already have a process running on port ${1}:"
@@ -31,15 +38,55 @@ function checkport() {
     fi
 }
 
+function run_ashlar_service() {
+    #
+    # Run the Ashlar server instance.
+    #
+    checkport 8000
+    init_db
+    if [ $# -eq 0 ];
+    then
+        # No arguments -- default to running a Django dev server
+        docker-compose run --rm --service-ports ashlar manage.py runserver
+    else
+        # User passed in arguments -- run their command
+        docker-compose run --rm --service-ports ashlar "$@"
+    fi
+}
+
+function run_editor_service() {
+    #
+    # Run the schema editor app.
+    #
+    checkport 8000
+    init_db
+    docker-compose up -d ashlar
+    checkport 9000
+    if [ $# -eq 0 ];
+    then
+        # No arguments -- default to running a Grunt server
+        docker-compose run --rm --service-ports editor serve
+    else
+        # User passed in arguments -- run their command
+        docker-compose run --rm --service-ports editor "$@"
+    fi
+}
+
+function run_all_services() {
+    #
+    # Run all services in docker-compose.yml (the managed equivalent of
+    # `docker-compose up`).
+    #
+    run_editor_service
+}
+
 if [ "${BASH_SOURCE[0]}" = "${0}" ]
 then
     if [ -z "$1" ]
     then
         # If no arguments are supplied, start all services.
         function runserver() {
-            checkport 8000
-            checkport 9000
-            docker-compose up
+            run_all_services
         }
     else
         case "$1" in
@@ -49,16 +96,16 @@ then
                 ;;
 
             ashlar)
+                shift 1
                 function runserver() {
-                    checkport 8000
-                    docker-compose run --service-ports ashlar manage.py wait_for_db_and_runserver
+                    run_ashlar_service "$@"
                 }
                 ;;
 
             editor)
+                shift 1
                 function runserver() {
-                    checkport 9000
-                    docker-compose run --rm --service-ports editor serve
+                    run_editor_service "$@"
                 }
                 ;;
             *)
@@ -69,5 +116,5 @@ then
                 ;;
         esac
     fi
-    runserver
+    runserver "$@"
 fi

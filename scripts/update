@@ -6,6 +6,10 @@ if [[ -n "${ASHLAR_BLUEPRINT_DEBUG}" ]]; then
     set -x
 fi
 
+# Import database methods from the directory path of this script
+CURDIR="${BASH_SOURCE%/*}"
+. "${CURDIR}/_init_db.sh"
+
 function usage() {
     echo -n "Usage: $(basename "$0")
 
@@ -23,6 +27,7 @@ then
         docker-compose build
 
         # Run migrations.
-        docker-compose run ashlar manage.py wait_for_db_and_migrate
+        init_db
+        docker-compose run --rm ashlar manage.py migrate
     fi
 fi
