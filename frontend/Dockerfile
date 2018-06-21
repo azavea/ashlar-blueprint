@@ -4,5 +4,5 @@ COPY requirements.txt /tmp/app_requirements.txt
 RUN pip install -r /tmp/app_requirements.txt
 RUN rm -f /tmp/tmp/app_requirements.txt
 
-COPY . /opt/app
-WORKDIR /opt/app
+COPY . /opt/frontend
+WORKDIR /opt/frontend

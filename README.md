@@ -51,11 +51,11 @@ by passing the `server` script an optional argument:
 # Run only the Ashlar instance
 ./scripts/server ashlar
 
-# Run only the frontend
-./scripts/server frontend
-
 # Run only the schema editor
 ./scripts/server editor
+
+# Run only the frontend
+./scripts/server frontend
 ```
 
 You can also run custom commands in the containers using the `server` script:
