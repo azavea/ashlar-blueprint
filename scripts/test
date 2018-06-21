@@ -40,18 +40,6 @@ function editor_tests() {
 
 }
 
-function all_tests() {
-    echo "Running all tests..."
-    echo "-------------------------------------------------------------------"
-    build_tests
-    echo "-------------------------------------------------------------------"
-    editor_tests
-    echo "-------------------------------------------------------------------"
-    git_tests
-    echo "-------------------------------------------------------------------"
-    echo "PASSED: All tests passed."
-}
-
 function git_tests() {
     # Fail build if any commit title in this branch contains these words
     echo "Making sure that all commits in this branch are clean..."
@@ -67,6 +55,18 @@ function git_tests() {
     else
         echo "PASSED: Git commits are clean."
     fi
+}
+
+function all_tests() {
+    echo "Running all tests..."
+    echo "-------------------------------------------------------------------"
+    build_tests
+    echo "-------------------------------------------------------------------"
+    editor_tests
+    echo "-------------------------------------------------------------------"
+    git_tests
+    echo "-------------------------------------------------------------------"
+    echo "PASSED: All tests passed."
 }
 
 if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
