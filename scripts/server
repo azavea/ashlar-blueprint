@@ -47,7 +47,7 @@ function run_ashlar_service() {
     if [ $# -eq 0 ];
     then
         # No arguments -- default to running a Django dev server
-        docker-compose run --rm --service-ports ashlar manage.py runserver
+        docker-compose run --rm --service-ports ashlar manage.py runserver 0.0.0.0:8000
     else
         # User passed in arguments -- run their command
         docker-compose run --rm --service-ports ashlar "$@"
