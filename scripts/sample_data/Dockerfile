@@ -9,4 +9,4 @@ RUN pip install -U -r /tmp/requirements.txt
 COPY . /opt/loaddata
 WORKDIR /opt/loaddata
 
-CMD python load.py
+CMD python loaddata.py

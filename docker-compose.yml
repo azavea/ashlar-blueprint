@@ -47,5 +47,8 @@ services:
     build: ./scripts/sample_data
     volumes:
       - ./scripts/sample_data:/opt/loaddata
+    workdir:
+      - /opt/loaddata
     depends_on:
       - ashlar
+    command: python loaddata.py
