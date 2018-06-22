@@ -82,7 +82,8 @@
     <script type="text/babel">
         $(() => {
             // Global state
-            var recordLayers = new Map(); // Store marker layers for Records by RecordType
+            var layerCache = new Map();  // Cache marker layers storing Records by RecordType
+            var activeLayer = {};  // Currently-selected marker layer
 
             // Make map fullscreen
             $(window).resize(() => {
@@ -112,10 +113,12 @@
             // URL for retrieving data from the Ashlar instance
             const apiUrl = 'http://127.0.0.1:8000/api';
 
-            // Retrieve record types from the API
+            // Retrieve record types from the API to populate filters
             $.getJSON(`${apiUrl}/recordtypes/`)
                 .done((data) => {
                     let recordtypes = data.results;
+
+                    // Create navbar filters for each record type
                     for (let recordtype of recordtypes) {
                         // Add a filter for this RecordType to the navbar
                         let navItem = `
@@ -126,67 +129,87 @@
                             </a>
                         `;
                         $('#recordtype-dropdown').append(navItem);
-
-                        // Retrieve records for this RecordType and create a
-                        // marker layer for them
-                        let queryParams = {
-                            archived: false,
-                            record_type: recordtype.uuid
-                        };
-                        $.getJSON(`${apiUrl}/records/`, data=queryParams)
-                            .done((data) => {
-                                let records = data.results;
-                                let markers = [];
-                                if (records) {
-                                    for (let record of records) {
-                                        // Extract data for display as a marker
-                                        let coords = record.geom.coordinates;
-                                        let lat = coords[0],
-                                            lng = coords[1];
-
-                                        let details = JSON.stringify({
-                                            start: record.occurred_from,
-                                            end: record.occurred_to,
-                                            data: record.data,
-                                        }, null, 2);
-
-                                        let popup = `
-                                            <h3>Details</h3>
-                                            <hr/>
-                                            <pre>
-                                                <code>
-                                                    ${details}
-                                                </code>
-                                            </pre>
-                                        `;
-
-                                        // Store the marker in a layer so that users
-                                        // can toggle it with the navbar
-                                        markers.push(new L.marker([lng, lat])
-                                                          .bindPopup(popup));
-                                    }
-                                    recordLayers.set(recordtype.uuid, new L.layerGroup(markers));
-                                } else {
-                                    alert(`No records found for RecordType "${recordtype.plural_label}"`);
-                                }
-                          }).fail((err) => {
-                                alert(err);
-                          });
                     }
+
                     // Allow user to toggle layers from the navbar
                     $('.filter-recordtype').click(function(e) {
                         e.preventDefault();
-                        // Remove all previously-selected map layers
-                        recordLayers.forEach((layer, rtId) => { map.removeLayer(layer); });
 
-                        // Add the visible layer to the map
-                        let recordTypeId = $(this).attr('id');
-                        let recordLayer = map.addLayer(recordLayers.get(recordTypeId));
+                        const recordTypeId = $(this).attr('id');
+
+                        // If a layer is currently active, remove it from the map
+                        if (Object.keys(activeLayer).length !== 0 && map.hasLayer(activeLayer)) {
+                            map.removeLayer(activeLayer);
+                        }
+
+                        // Prefer layers in the cache
+                        let layer = layerCache[recordTypeId];
+                        if (typeof(layer) !== 'undefined') {
+                            map.addLayer(layer);
+                            activeLayer = layer;
+                        } else {
+                            // Layer is not in the cache -- retrieve the records from the API
+                            let queryParams = {
+                                archived: false,
+                                record_type: recordTypeId
+                            };
+                            $.getJSON(`${apiUrl}/records/`, data=queryParams)
+                                .done((data) => {
+                                    let records = data.results;
+                                    let markers = [];
+                                    if (records) {
+                                        for (let record of records) {
+                                            // Extract data for display as a marker
+                                            let coords = record.geom.coordinates;
+                                            let lat = coords[0],
+                                                lng = coords[1];
+
+                                            let details = JSON.stringify({
+                                                start: record.occurred_from,
+                                                end: record.occurred_to,
+                                                data: record.data,
+                                            }, null, 2);
+
+                                            let popup = `
+                                                <h3>Details</h3>
+                                                <hr/>
+                                                <pre>
+                                                    <code>
+                                                        ${details}
+                                                    </code>
+                                                </pre>
+                                            `;
+
+                                            // Store the marker in a layer so that users
+                                            // can toggle it with the navbar and we
+                                            // can cache it
+                                            markers.push(new L.marker([lng, lat])
+                                                                .bindPopup(popup));
+                                        }
+                                        // Cache this layer
+                                        layer = new L.layerGroup(markers);
+                                        layerCache.set(recordTypeId, layer);
+
+                                        // Add the layer to the map
+                                        map.addLayer(layer);
+                                        activeLayer = layer;
+                                    } else {
+                                        alert(`No records found for RecordType "${recordTypeId}"`);
+                                    }
+                              }).fail((err) => {
+                                    alert(err);
+                              });
+                        }
+                    });
+                    // Once the navbar is prepared, select the first layer for display
+                    map.whenReady(() => {
+                        $('.filter-recordtype').first().click();
                     });
               }).fail((err) => {
                     alert(err);
               });
         });
+
     </script>
     {% endblock %}
 </body>
