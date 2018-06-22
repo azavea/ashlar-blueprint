@@ -22,10 +22,32 @@
 </head>
 <body>
     {% block body %}
-    <div class="container-fluid">
-        <nav class="navbar navbar-expand-md navbar-light bg-light">
+    <nav class="navbar navbar-expand-md navbar-reverse navbar-light bg-light">
+        <div class="container-fluid">
             <a class="navbar-brand" href="/">Ashlar Public Frontend</a>
-        </nav>
+            <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbar-content" aria-controls="navbar-content"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-end" id="navbar-content">
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown"
+                           role="button" aria-haspopup="true" aria-expanded="false"
+                           id="recordtype-dropdown-link">
+                            Record Types
+                        </a>
+                        <div class="dropdown-menu" id="recordtype-dropdown"
+                             aria-labelledby="recordtype-dropdown-link"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
         <div class="row">
             <div id="map"></div>
         </div>
@@ -59,6 +81,9 @@
     {% block extra_js %}
     <script type="text/babel">
         $(() => {
+            // Global state
+            var recordLayers = new Map(); // Store marker layers for Records by RecordType
+
             // Make map fullscreen
             $(window).resize(() => {
                 let windowHeight = $(window).outerHeight();
@@ -70,8 +95,8 @@
 
             // Initialize a map
             var map = new L.map('map', {
-                center: [40.01, -75.13],
-                zoom: 9,
+                center: [39.95, -75.16],
+                zoom: 12,
                 dragging: true,
                 touchZoom: true,
                 tap: true,
@@ -84,25 +109,83 @@
                 maxZoom: 18,
             }).addTo(map);
 
+            // URL for retrieving data from the Ashlar instance
             const apiUrl = 'http://127.0.0.1:8000/api';
 
-            // Display all records on the map
-            $.getJSON(`${apiUrl}/records/`)
+            // Retrieve record types from the API
+            $.getJSON(`${apiUrl}/recordtypes/`)
                 .done((data) => {
-                    let records = data.results;
-                    if (records) {
-                        for (let record of records) {
-                            let coords = record.geom.coordinates;
-                            let lat = coords[0],
-                                lng = coords[1];
-                            console.log([lng, lat]);
-                        }
-                    } else {
-                        console.log('No records found');
+                    let recordtypes = data.results;
+                    for (let recordtype of recordtypes) {
+                        // Add a filter for this RecordType to the navbar
+                        let navItem = `
+                            <a class="dropdown-item filter-recordtype"
+                               id="${recordtype.uuid}"
+                               href="#">
+                                ${recordtype.plural_label}
+                            </a>
+                        `;
+                        $('#recordtype-dropdown').append(navItem);
+
+                        // Retrieve records for this RecordType and create a
+                        // marker layer for them
+                        let queryParams = {
+                            archived: false,
+                            record_type: recordtype.uuid
+                        };
+                        $.getJSON(`${apiUrl}/records/`, data=queryParams)
+                            .done((data) => {
+                                let records = data.results;
+                                let markers = [];
+                                if (records) {
+                                    for (let record of records) {
+                                        // Extract data for display as a marker
+                                        let coords = record.geom.coordinates;
+                                        let lat = coords[0],
+                                            lng = coords[1];
+
+                                        let details = JSON.stringify({
+                                            start: record.occurred_from,
+                                            end: record.occurred_to,
+                                            data: record.data,
+                                        }, null, 2);
+
+                                        let popup = `
+                                            <h3>Details</h3>
+                                            <hr/>
+                                            <pre>
+                                                <code>
+                                                    ${details}
+                                                </code>
+                                            </pre>
+                                        `;
+
+                                        // Store the marker in a layer so that users
+                                        // can toggle it with the navbar
+                                        markers.push(new L.marker([lng, lat])
+                                                          .bindPopup(popup));
+                                    }
+                                    recordLayers.set(recordtype.uuid, new L.layerGroup(markers));
+                                } else {
+                                    alert(`No records found for RecordType "${recordtype.plural_label}"`);
+                                }
+                          }).fail((err) => {
+                                alert(err);
+                          });
                     }
+                    // Allow user to toggle layers from the navbar
+                    $('.filter-recordtype').click(function(e) {
+                        e.preventDefault();
+                        // Remove all previously-selected map layers
+                        recordLayers.forEach((layer, rtId) => { map.removeLayer(layer); });
+
+                        // Add the visible layer to the map
+                        let recordTypeId = $(this).attr('id');
+                        let recordLayer = map.addLayer(recordLayers.get(recordTypeId));
+                    });
               }).fail((err) => {
-                    console.log(err);
-              })
+                    alert(err);
+              });
         });
     </script>
     {% endblock %}
