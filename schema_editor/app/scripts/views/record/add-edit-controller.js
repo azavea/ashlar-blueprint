@@ -149,32 +149,38 @@
         /* Loads the right schema:
          * - If there's a record, loads the latest schema for the record's type
          *   (edit mode)
-         * - Otherwise, checks for a record type that can be used to finda schema
+         * - Otherwise, checks for a record type that can be used to find aa schema
          *   (add mode)
          * - If no record type loads (e.g. if someone has navigated to the view
          *   improperly), sets an error and returns a rejected promise.
          */
         function loadRecordSchema(recordTypeUuid) {
-            var queryObj = {};
+            var typePromise,
+                recordLoaded;
             if (ctl.record) {
                 // If there's a record loaded, get its schema
-                queryObj.record = ctl.record.uuid;
+                typePromise = RecordTypes.query({ record: ctl.record.uuid }).$promise;
+                recordLoaded = true;
 
             } else if (typeof(recordTypeUuid !== 'undefined')) {
                 // The user is adding a new record, so retrieve the schema for
                 // the record type that they selected
-                queryObj.uuid = recordTypeUuid;
+                typePromise = RecordTypes.get({ id: recordTypeUuid }).$promise;
+                recordLoaded = false;
 
             } else {
                 ctl.error = 'Unable to load record schema: no Record or RecordType specified.';
                 return $q.reject(ctl.error);
             }
 
-            return RecordTypes.query(queryObj).$promise.then(function (result) {
+            return typePromise.then(function (result) {
                 // TODO: Remove secondary logic. For now, default to false.
                 ctl.isSecondary = false;
 
-                var recordType = result[0];
+                // The `get` and `query` endpoints return different data types;
+                // switch the request based on which endpoint was used
+                var recordType = (recordLoaded === true) ? result[0] : result;
+
                 if (recordType) {
                     ctl.recordType = recordType;
                     /* jshint camelcase: false */
