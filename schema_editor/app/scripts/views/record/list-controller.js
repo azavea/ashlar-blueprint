@@ -38,7 +38,7 @@
                     /* jshint camelcase: false */
                     return RecordSchemas.get({ id: ctl.recordType.current_schema }).$promise
                     /* jshint camelcase: true */
-                        .then(function(recordSchema) { console.log('Got record schema'); ctl.recordSchema = recordSchema; })
+                        .then(function(recordSchema) { ctl.recordSchema = recordSchema; })
                         .then(onSchemaLoaded)
                         .then(loadRecords);
                 } else {
@@ -68,11 +68,7 @@
                 limit: ASEConfig.record.limit
             };
 
-            Records.query({ schema: ctl.recordSchema.uuid }).$promise.then(function(records) {
-                console.log(records);
-            });
-
-            return Records.get(params).$promise
+            Records.get({ record_type: ctl.recordType.uuid }).$promise
             .then(function(records) {
                 ctl.records = records;
                 ctl.currentOffset = newOffset;
