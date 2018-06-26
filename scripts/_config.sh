@@ -12,4 +12,4 @@ if [[ -n "${ASHLAR_BLUEPRINT_DEBUG}" ]]; then
 fi
 
 # Trap Ctrl+C signals and make sure they kill all running containers.
-trap "docker-compose stop db && docker-compose down" SIGINT SIGTERM
+trap "docker-compose stop" SIGINT SIGTERM
