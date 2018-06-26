@@ -114,10 +114,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# Allow CORS requests from any port on the loopback interface
-CORS_ORIGIN_REGEX_WHITELIST = (
-    r'^http://127.0.0.1:\d+',
-)
+if DEBUG:
+    CORS_ORIGIN_ALLOW_ALL = True
+else:
+    # Allow CORS requests only from the loopback interface
+    CORS_ORIGIN_REGEX_WHITELIST = (
+        r'^http://127.0.0.1:\d+',
+        r'^http://localhost:\d+'
+    )
 
 # Configure Django REST Framework authentication settings
 REST_FRAMEWORK = {
