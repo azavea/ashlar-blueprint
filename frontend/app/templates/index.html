@@ -31,7 +31,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse justify-content-end" id="navbar-content">
+            <div class="collapse navbar-collapse" id="navbar-content">
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown"
@@ -43,6 +43,10 @@
                              aria-labelledby="recordtype-dropdown-link"></div>
                     </li>
                 </ul>
+                <form class="form-inline my-2 my-lg-0">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Filter by search" aria-label="Filter by search">
+                    <button class="btn btn-outline-dark my-2 my-sm-0" type="submit">Search</button>
+                </form>
             </div>
         </div>
     </nav>
@@ -124,6 +128,7 @@
                         let navItem = `
                             <a class="dropdown-item filter-recordtype"
                                id="${recordtype.uuid}"
+                               data-schema="${recordtype.current_schema}"
                                href="#">
                                 ${recordtype.plural_label}
                             </a>
@@ -136,6 +141,10 @@
                         e.preventDefault();
 
                         const recordTypeId = $(this).attr('id');
+                        const currentSchemaId = $(this).attr('data-schema');
+
+                        // Update filters for the current selection
+                        updateFilters(currentSchemaId);
 
                         // If a layer is currently active, remove it from the map
                         if (Object.keys(activeLayer).length !== 0 && map.hasLayer(activeLayer)) {
@@ -208,6 +217,94 @@
               }).fail((err) => {
                     alert(err);
               });
+
+            // Load filters
+            function updateFilters(schemaId) {
+                // Clear existing filters
+                $('.filterable').remove();
+
+                // Retrieve the schema to figure out what fields need to be displayed
+                $.getJSON(`${apiUrl}/recordschemas/${schemaId}`)
+                    .done((schema) => {
+                        let definitions = {};
+                        if (schema.schema && schema.schema.definitions) {
+                            definitions = schema.schema.definitions;
+                        }
+
+                        let isFilterable = function(val) { return val.isSearchable; };
+                        let filterables = {};
+                        Object.keys(definitions).forEach((key) => {
+                            let schema = definitions[key];
+                            Object.keys(schema.properties).forEach((prop) => {
+                                let property = schema.properties[prop];
+                                // merge in `multiple` to keep track of the type of containment
+                                if (isFilterable(property)) {
+                                    filterables[prop] = Object.assign({}, property, {multiple: schema.multiple});
+                                }
+                            });
+                        });
+
+                        Object.keys(filterables).forEach((key) => {
+                            let filterable = filterables[key];
+                            let elem = `
+                                <ul class="navbar-nav filterable">
+                                    <li class="nav-item dropdown">
+                                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown"
+                                        role="button" aria-haspopup="true" aria-expanded="false">
+                                            ${key}
+                                        </a>
+                                        <div class="dropdown-menu">
+                            `;
+
+                            if (filterable.fieldType === 'number') {
+                                // Number types should produce range dropdowns
+                                elem += `
+                                            <div class="form-group">
+                                                <label for="min">From</label>
+                                                <input name="min" placeholder="minimum" />
+                                                <label for="max">To</label>
+                                                <input name="max" placeholder="maximum" />
+                                            </div>
+                                `
+
+                            } else if (filterable.fieldType === 'selectlist') {
+                                // Select list types need to provide options for
+                                // selection
+                                elem += `
+                                            <div class="form-group">
+                                                <select class="selectpicker form-control"
+                                                        multiple>
+                                `;
+
+                                for (let opt of filterable.enum) {
+                                    elem += `
+                                                    <option value="${opt}">${opt}</option>
+                                    `;
+                                }
+
+                                elem += `
+                                                </select>
+                                            </div>
+                                `;
+
+                            } else {
+                                // No other types need elements, so break.
+                                return;
+                            }
+
+                            elem += `
+                                        </div>
+                                    </li>
+                                </ul>
+                            `;
+
+                            $('#navbar-content').append(elem);
+                        });
+                  }).fail((err) => {
+                        console.log(err);
+                  });
+            }
+
         });
 
     </script>

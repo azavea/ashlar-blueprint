@@ -65,10 +65,13 @@
 
             var params = {
                 offset: newOffset,
-                limit: ASEConfig.record.limit
+                limit: ASEConfig.record.limit,
+                /* jshint camelcase: false */
+                record_type: ctl.recordType.uuid
+                /* jshint camelcase: true */
             };
 
-            Records.get({ record_type: ctl.recordType.uuid }).$promise
+            Records.get(params).$promise
             .then(function(records) {
                 ctl.records = records;
                 ctl.currentOffset = newOffset;
