@@ -1,15 +1,23 @@
 # load.py -- load sample data into an Ashlar Blueprint instance
 import time
 import json
+import sys
 
 import requests
+
+# Ashlar server URL
+BASE_URL = 'http://ashlar:8000/api/'
+
+# Number of times to retry the connection to the Ashlar server (helpful if
+# Docker instances spin up at different times)
+NUM_RETRIES = 10
 
 
 if __name__ == '__main__':
 
     print('Loading sample data...')
 
-    # Load sample data files into memory
+    # Load sample data files into memory.
     with open('records.json', 'r') as records_file:
         records = json.load(records_file)
 
@@ -19,22 +27,21 @@ if __name__ == '__main__':
     with open('schemas.json', 'r') as schemas_file:
         recordschemas = json.load(schemas_file)
 
-    base_url = 'http://ashlar:8000/api/'
+    print(f'Checking the host at {BASE_URL}...')
 
-    print('Uploading a sample RecordType...')
+    num_retries = NUM_RETRIES
 
-    num_retries = 10
-
-    # POST the record type
+    # Check if sample data already exists by looking for the first record
+    # from the sample file.
     while num_retries >= 0:
         try:
-            rt_res = requests.post(base_url + 'recordtypes/', json=recordtypes)
-            print(f'Connected to the host at {base_url}')
+            existing_recs = requests.get(BASE_URL + 'records/')
+            print(f'Connected to the host at {BASE_URL}')
             break
         except requests.exceptions.ConnectionError as e:
             # Failed to establish a connection with the Ashlar host -- try
             # for 10 seconds, and then raise the error
-            print(f'Host at {base_url} is not available -- retrying ({num_retries} attempts remaining)')
+            print(f'Host at {BASE_URL} is not available -- retrying ({num_retries} attempts remaining)')
             num_retries -= 1
 
             if num_retries == 0:
@@ -42,6 +49,15 @@ if __name__ == '__main__':
             else:
                 time.sleep(1)
 
+    existing_recs.raise_for_status()
+    if existing_recs.json()['count'] > 0 :
+        print('Sample data already exists in the database -- skipping upload.')
+        sys.exit(0)
+
+    print('Uploading a sample RecordType...')
+
+    # POST the record type
+    rt_res = requests.post(BASE_URL + 'recordtypes/', json=recordtypes)
     rt_res.raise_for_status()
     rt_json = rt_res.json()
 
@@ -53,7 +69,7 @@ if __name__ == '__main__':
     print('Uploading a sample RecordSchema...')
 
     # POST the record schema
-    schema_res = requests.post(base_url + 'recordschemas/', json=recordschemas)
+    schema_res = requests.post(BASE_URL + 'recordschemas/', json=recordschemas)
     schema_res.raise_for_status()
     schema_json = schema_res.json()
 
@@ -67,7 +83,7 @@ if __name__ == '__main__':
 
     # POST the records
     for record in records:
-        record_res = requests.post(base_url + 'records/', json=record)
+        record_res = requests.post(BASE_URL + 'records/', json=record)
         record_res.raise_for_status()
         record_json = record_res.json()
         print('Uploaded Record', record_json['uuid'])

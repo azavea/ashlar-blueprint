@@ -37,7 +37,7 @@ then
         # Import sample data.
         docker-compose run --rm loaddata
 
-        # Stop the database service.
-        docker-compose stop db
+        # Stop all running services.
+        docker-compose stop
     fi
 fi

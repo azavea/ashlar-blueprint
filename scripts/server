@@ -101,7 +101,7 @@ function run_frontend_service() {
     if [ $# -eq 0 ];
     then
         # No arguments -- default to running a Flask dev server
-        docker-compose run --rm --service-ports --entrypoint="flask run --host=0.0.0.0" frontend
+        docker-compose up frontend
     else
         if [ "$1" = "detached"  ];
         then
