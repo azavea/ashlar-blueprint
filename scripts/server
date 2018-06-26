@@ -1,14 +1,18 @@
 #!/bin/bash
 
-set -e
-
-if [[ -n "${ASHLAR_BLUEPRINT_DEBUG}" ]]; then
-    set -x
+# Most reliable way to get the path for this script.
+# h/t: https://stackoverflow.com/questions/192292/bash-how-best-to-include-other-scripts/12694189#12694189
+DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$DIR" ]];
+then
+    DIR="$PWD"
 fi
 
+# Load common configs for this script.
+source "${DIR}/_config.sh"
+
 # Import database methods from the directory path of this script
-CURDIR="${BASH_SOURCE%/*}"
-. "${CURDIR}/_init_db.sh"
+source "${DIR}/_init_db.sh"
 
 function usage() {
     echo -n "Usage: $(basename "$0") {ashlar,editor} [CMD]
@@ -47,7 +51,7 @@ function run_ashlar_service() {
     if [ $# -eq 0 ];
     then
         # No arguments -- default to running a Django dev server
-        docker-compose run --rm --service-ports ashlar manage.py runserver 0.0.0.0:8000
+        docker-compose up ashlar
     else
         # User passed in arguments -- run their command
         docker-compose run --rm --service-ports ashlar "$@"
@@ -65,7 +69,7 @@ function run_editor_service() {
     if [ $# -eq 0 ];
     then
         # No arguments -- default to running a Grunt server
-        docker-compose run --rm --service-ports editor serve
+        docker-compose up editor
     else
         # User passed in arguments -- run their command
         docker-compose run --rm --service-ports editor "$@"

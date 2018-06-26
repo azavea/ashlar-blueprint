@@ -16,6 +16,8 @@ services:
     ports:
       - "8000:8000"
     env_file: ./ashlar/.env
+    environment:
+      - PYTHONUNBUFFERED=0  # Do not buffer output (allows Docker to stream stdout)
 
   editor:
     build: ./schema_editor
