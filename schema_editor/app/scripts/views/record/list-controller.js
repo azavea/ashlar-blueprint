@@ -31,14 +31,14 @@
         }
 
         function loadRecordSchema(recordTypeUuid) {
-            RecordTypes.query({ uuid: recordTypeUuid }).$promise.then(function (result) {
-                var recordType = result[0];
+            RecordTypes.get({ id: recordTypeUuid }).$promise.then(function (result) {
+                var recordType = result;
                 if (recordType) {
                     ctl.recordType = recordType;
                     /* jshint camelcase: false */
                     return RecordSchemas.get({ id: ctl.recordType.current_schema }).$promise
                     /* jshint camelcase: true */
-                        .then(function(recordSchema) { ctl.recordSchema = recordSchema; })
+                        .then(function(recordSchema) { console.log('Got record schema'); ctl.recordSchema = recordSchema; })
                         .then(onSchemaLoaded)
                         .then(loadRecords);
                 } else {
@@ -67,6 +67,10 @@
                 offset: newOffset,
                 limit: ASEConfig.record.limit
             };
+
+            Records.query({ schema: ctl.recordSchema.uuid }).$promise.then(function(records) {
+                console.log(records);
+            });
 
             return Records.get(params).$promise
             .then(function(records) {
