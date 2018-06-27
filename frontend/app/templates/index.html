@@ -58,7 +58,7 @@
                                 </div>
                                 <div id="recordtype-dropdown" class="collapse show" data-parent="#recordtype-accordion">
                                     <div class="card-body">
-                                        <div id="recordtype-options" data-toggle="buttons"></div>
+                                        <select name="record_type" id="recordtype-options"></select>
                                     </div>
                                 </div>
                             </div>
@@ -110,11 +110,15 @@
     {% block extra_js %}
     <script type="text/babel">
         $(() => {
-            // Global state
-            var layerCache = new Map();  // Cache marker layers storing Records by RecordType
-            var activeLayer = {};  // Currently-selected marker layer
+            /* --------------------------------------------------------- //
+            // Set up global variables and run initialization functions. //
+            // --------------------------------------------------------- */
 
-            // Make map fullscreen
+            // Global variables.
+            var activeLayer = {};  // Currently-selected marker layer
+            const apiUrl = 'http://127.0.0.1:8000/api';  // URL for Ashlar instance
+
+            // Make map fullscreen.
             $(window).resize(() => {
                 let windowHeight = $(window).outerHeight();
                 let offsetTop = $('.navbar').height(); // Calculate the top offset
@@ -123,7 +127,7 @@
                 $('#map').css('height', mapHeight);
             }).resize();
 
-            // Initialize a map
+            // Initialize a map.
             var map = new L.map('map', {
                 center: [39.95, -75.16],
                 zoom: 12,
@@ -133,239 +137,280 @@
                 scrollWheelZoom: false
             });
 
-            // Add tile layer from OSM
+            // Add tile layer from OSM.
             var tiles = new L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> Contributors',
                 maxZoom: 18,
             }).addTo(map);
 
-            // URL for retrieving data from the Ashlar instance
-            const apiUrl = 'http://127.0.0.1:8000/api';
+            // Initialize the filter form to intercept the submit event and use
+            // custom querying logic.
+            initializeFilterForm();
 
-            // Retrieve record types from the API to populate filters
-            $.getJSON(`${apiUrl}/recordtypes/`)
-                .done((data) => {
-                    let recordtypes = data.results;
+            // Initialize the Record Type filters, the only filters that are
+            // common to all projects.
+            initializeRecordTypes();
 
-                    // Create navbar filters for each record type
-                    for (let recordtype of recordtypes) {
-                        // Add a filter for this RecordType to the navbar
-                        let navItem = `
-                            <label class="btn btn-secondary filter-recordtype-container">
-                                <input type="radio" name="recordtype"
-                                       class="filter-recordtype"
-                                       id="${recordtype.uuid}"
-                                       data-schema="${recordtype.current_schema}">
-                                    ${recordtype.plural_label}
-                                </input>
-                            </label>
-                        `;
-                        $('#recordtype-options').append(navItem);
+            /* --------------------- //
+            // Function definitions. //
+            // --------------------- */
+
+            function initializeFilterForm() {
+                // Bind events to filter form.
+                $('#filter-form').submit(function(e) {
+                    // User is submitting new filters -- read the form data
+                    // and filter appropriately.
+                    e.preventDefault();
+
+                    let filters = getFormFilters();
+
+                    // Record Type is filtered separate from the rest of the
+                    // filters -- retrieve its data.
+                    let recordTypeId = $('#recordtype-options').val();
+                    let currentSchemaId = $(`.recordtype-option[value="${recordTypeId}"]`).attr('data-schema');
+
+                    // Update filters for the selected RecordType.
+                    updateFilters(currentSchemaId);
+
+                    // If a layer is currently active, remove it from the map.
+                    if (Object.keys(activeLayer).length !== 0 && map.hasLayer(activeLayer)) {
+                        map.removeLayer(activeLayer);
                     }
 
-                    // Allow user to toggle layers from the navbar
-                    $('.filter-recordtype-container').click(function(e) {
-                        e.preventDefault();
+                    // Generate query parameters and run the query.
+                    let queryParams = {
+                        jsonb: filters,
+                        record_type: recordTypeId
+                    };
 
-                        let recordTypeId = '',
-                            currentSchemaId = '';
-                        if ($(this).hasClass('filter-recordtype')) {
-                            recordTypeId = $(this).attr('id');
-                            currentSchemaId = $(this).attr('data-schema');
-                        } else {
-                            recordTypeId = $(this).find('.filter-recordtype').attr('id');
-                            currentSchemaId = $(this).find('.filter-recordtype').attr('data-schema');
-                        }
+                    queryRecords(queryParams);
+                });
+            }
 
-                        // Update filters for the current selection
-                        updateFilters(currentSchemaId);
+            function getFormFilters() {
+                // Read filters from the form and return them as an object
+                // that we can use to query Ashlar.
+                let filters = {};
+                $('#filter-form').serializeArray().forEach((field) => {
+                    // Form data gets encoded as an array of objects storing
+                    // the name and value of the field. Process that object
+                    // into a JSON object suitable for querying.
+                    let name = field.name,
+                        value = field.value;
 
-                        // If a layer is currently active, remove it from the map
-                        if (Object.keys(activeLayer).length !== 0 && map.hasLayer(activeLayer)) {
-                            map.removeLayer(activeLayer);
-                        }
+                    if (value) {};
+                });
 
-                        // Prefer layers in the cache
-                        let layer = layerCache[recordTypeId];
-                        if (typeof(layer) !== 'undefined') {
-                            map.addLayer(layer);
-                            activeLayer = layer;
-                        } else {
-                            // Layer is not in the cache -- retrieve the records from the API
-                            let queryParams = {
-                                archived: false,
-                                record_type: recordTypeId
-                            };
-                            $.getJSON(`${apiUrl}/records/`, data=queryParams)
-                                .done((data) => {
-                                    let records = data.results;
-                                    let markers = [];
-                                    if (records) {
-                                        for (let record of records) {
-                                            // Extract data for display as a marker
-                                            let coords = record.geom.coordinates;
-                                            let lat = coords[0],
-                                                lng = coords[1];
+                return filters;
+            }
 
-                                            let details = JSON.stringify({
-                                                start: record.occurred_from,
-                                                end: record.occurred_to,
-                                                data: record.data,
-                                            }, null, 2);
-
-                                            let popup = `
-                                                <h3>Details</h3>
-                                                <hr/>
-                                                <pre>
-                                                    <code>
-                                                        ${details}
-                                                    </code>
-                                                </pre>
-                                            `;
-
-                                            // Store the marker in a layer so that users
-                                            // can toggle it with the navbar and we
-                                            // can cache it
-                                            markers.push(new L.marker([lng, lat])
-                                                                .bindPopup(popup));
-                                        }
-                                        // Cache this layer
-                                        layer = new L.layerGroup(markers);
-                                        layerCache.set(recordTypeId, layer);
-
-                                        // Add the layer to the map
-                                        map.addLayer(layer);
-                                        activeLayer = layer;
-                                    } else {
-                                        alert(`No records found for RecordType "${recordTypeId}"`);
-                                    }
-                              }).fail((err) => {
-                                    alert(err);
-                              });
-                        }
-                    });
-                    // Once the navbar is prepared, select the first layer for display
-                    map.whenReady(() => {
-                        $('.filter-recordtype-container').first().click();
-                    });
-              }).fail((err) => {
-                    alert(err);
-              });
-
-            // Load filters
             function updateFilters(schemaId) {
-                // Clear existing filters
+                // Load filters for a given schema based on its `schemaId`.
+
+                // Always clear existing filters.
                 $('#filter-accordion').html('');
 
                 // Retrieve the schema to figure out what fields need to be displayed
                 $.getJSON(`${apiUrl}/recordschemas/${schemaId}`)
                     .done((schema) => {
-                        let definitions = {};
-                        if (schema.schema && schema.schema.definitions) {
-                            definitions = schema.schema.definitions;
-                        }
 
-                        let isFilterable = function(val) { return val.isSearchable; };
-                        let filterables = {};
-                        Object.keys(definitions).forEach((key) => {
-                            let schema = definitions[key];
-                            Object.keys(schema.properties).forEach((prop) => {
-                                let property = schema.properties[prop];
-                                // merge in `multiple` to keep track of the type of containment
-                                if (isFilterable(property)) {
-                                    filterables[prop] = Object.assign({}, property, {multiple: schema.multiple});
-                                }
-                            });
-                        });
+                        let filterables = getFilterables(schema);
 
                         Object.keys(filterables).forEach((key) => {
                             let filterable = filterables[key];
-                            let num = filterable.propertyOrder;
-                            let elem = `
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">
-                                            <button class="btn btn-link" type="button"
-                                                    data-toggle="collapse"
-                                                    data-target="#filter-dropdown-${num}">
-                                                ${key}
-                                            </button>
-                                        </h5>
-                                    </div>
-                                    <div id="filter-dropdown-${num}" class="collapse">
-                                        <div class="card-body">
-                            `;
 
+                            let widget = getFilterWidget(key, filterable);
 
-                            if (filterable.fieldType === 'number') {
-                                // Number types should produce range dropdowns
-                                elem += `
-                                            <div class="input-group">
-                                                <div class="input-group-prepend">
-                                                    <div class="input-group-text">
-                                                        From
-                                                    </div>
-                                                </div>
-                                                <input type="text" class="form-control"
-                                                       name="min" placeholder="Minimum number" />
-                                            </div>
-                                            <div class="input-group">
-                                                <div class="input-group-prepend">
-                                                    <div class="input-group-text">
-                                                        To
-                                                    </div>
-                                                </div>
-                                                <input type="text" class="form-control"
-                                                       name="max" placeholder="Maxium number" />
-                                            </div>
-                                `
-
-                            } else if (filterable.fieldType === 'selectlist') {
-                                // Select list types need to provide options for
-                                // selection
-                                elem += `
-                                            <div class="form-group">
-                                                <select class="selectpicker form-control"
-                                                        multiple>
-                                `;
-
-                                for (let opt of filterable.enum) {
-                                    elem += `
-                                                    <option value="${opt}">${opt}</option>
-                                    `;
-                                }
-
-                                elem += `
-                                                </select>
-                                            </div>
-                                `;
-
-                            } else {
-                                // No other types need elements, so break.
-                                return;
-                            }
-
-                            elem += `
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-
-                            $('#filter-accordion').append(elem);
+                            $('#filter-accordion').append(widget);
                         });
-
-                        bindFilterEvents();
 
                   }).fail((err) => {
                         console.log(err);
                   });
             }
 
-            function bindFilterEvents() {
-                // Bind events to filters. Runs once the filters have been
-                // initialized.
+            function getFilterables(schema) {
+                // Given a schema object, return a map of fields that are
+                // filterable.
+                let definitions = {};
+                if (schema.schema && schema.schema.definitions) {
+                    definitions = schema.schema.definitions;
+                }
+
+                let isFilterable = function(val) { return val.isSearchable; };
+                let filterables = {};
+                Object.keys(definitions).forEach((key) => {
+                    let schema = definitions[key];
+                    Object.keys(schema.properties).forEach((prop) => {
+                        let property = schema.properties[prop];
+                        // merge in `multiple` to keep track of the type of containment
+                        if (isFilterable(property)) {
+                            filterables[prop] = Object.assign({}, property, {multiple: schema.multiple});
+                        }
+                    });
+                });
+
+                return filterables;
             }
 
+            function getFilterWidget(key, filterable) {
+                // Given a `filterable` object and its name `key`,
+                // return an HTML element for the filter widget.
+                let num = filterable.propertyOrder;
+                let elem = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link" type="button"
+                                        data-toggle="collapse"
+                                        data-target="#filter-dropdown-${num}">
+                                    ${key}
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="filter-dropdown-${num}" class="collapse">
+                            <div class="card-body">
+                `;
+
+
+                if (filterable.fieldType === 'number') {
+                    // Number types should produce range dropdowns
+                    elem += `
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">
+                                            From
+                                        </div>
+                                    </div>
+                                    <input type="text" class="form-control"
+                                            name="min" placeholder="Minimum number" />
+                                </div>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">
+                                            To
+                                        </div>
+                                    </div>
+                                    <input type="text" class="form-control"
+                                            name="max" placeholder="Maxium number" />
+                                </div>
+                    `
+
+                } else if (filterable.fieldType === 'selectlist') {
+                    // Select list types need to provide options for
+                    // selection
+                    elem += `
+                                <div class="form-group">
+                                    <select name="select" class="selectpicker form-control"
+                                            multiple>
+                    `;
+
+                    for (let opt of filterable.enum) {
+                        elem += `
+                                        <option value="${opt}">${opt}</option>
+                        `;
+                    }
+
+                    elem += `
+                                    </select>
+                                </div>
+                    `;
+
+                } else {
+                    // No other types need elements, so break.
+                    return;
+                }
+
+                elem += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                return elem;
+            }
+
+            function queryRecords(queryParams = {}) {
+                // Query records using the `queryParams` object,
+                // updating the map once the query completes.
+                let params = Object.assign({}, queryParams, {archived: false})
+
+                $.getJSON(`${apiUrl}/records/`, params)
+                    .done((data) => {
+                        let records = data.results;
+                        let markers = [];
+                        if (records) {
+                            for (let record of records) {
+                                // Extract data for display as a marker
+                                let coords = record.geom.coordinates;
+                                let lat = coords[0],
+                                    lng = coords[1];
+
+                                let details = JSON.stringify({
+                                    start: record.occurred_from,
+                                    end: record.occurred_to,
+                                    data: record.data,
+                                }, null, 2);
+
+                                let popup = `
+                                    <h3>Details</h3>
+                                    <hr/>
+                                    <pre>
+                                        <code>
+                                            ${details}
+                                        </code>
+                                    </pre>
+                                `;
+
+                                // Store the marker in a layer so that we can
+                                // remove it when filters change.
+                                markers.push(new L.marker([lng, lat])
+                                                    .bindPopup(popup));
+                            }
+                            // Add the layer to the map and store it in the
+                            // global state variables.
+                            let layer = new L.layerGroup(markers);
+                            map.addLayer(layer);
+                            activeLayer = layer;
+                        } else {
+                            console.log('No records found with query params:');
+                            console.log(params);
+                            alert('No records found -- see console for debug details');
+                        }
+                    }).fail((err) => {
+                        alert(err);
+                    });
+            }
+
+            function initializeRecordTypes() {
+            // Retrieve record types from the API to populate filters.
+                $.getJSON(`${apiUrl}/recordtypes/`)
+                    .done((data) => {
+                        let recordtypes = data.results;
+
+                        // Create navbar filters for each record type
+                        for (let recordtype of recordtypes) {
+                            // Add a filter for this RecordType to the navbar
+                            let rtOpt= `
+                                <option value="${recordtype.uuid}"
+                                        data-schema="${recordtype.current_schema}"
+                                        class="recordtype-option">
+                                    ${recordtype.plural_label}
+                                </option>
+                            `;
+                            $('#recordtype-options').append(rtOpt);
+                        }
+
+                        // Once the RecordTypes have been populated and the map
+                        // is ready, select the first available RecordType for display.
+                        map.whenReady(() => {
+                            $('#recordtype-options').val($('.recordtype-option').first().val());
+                            $('#filter-form').submit();
+                        });
+                  }).fail((err) => {
+                        alert(err);
+                  });
+            }
         });
 
     </script>
