@@ -31,42 +31,14 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-4 sidebar" style="margin-top:10px">
-                <h4>Filters</h4>
+                <h5>Filter by Record Type</h5>
                 <hr/>
                 <form id="filter-form">
                     <div class="col-xs-12">
-                        <div class="form-inline my-2 my-lg-0">
-                            <input class="form-control mr-sm-2" type="search"
-                                placeholder="Filter by search" aria-label="Filter by search"
-                                name="search">
-                            <button class="btn btn-outline-dark my-2 my-sm-0" id="search-submit"
-                                    type="submit">
-                                Search
-                            </button>
-                        </div>
+                        <select name="record_type" id="recordtype-options"></select>
                     </div>
                     <br/>
-                    <div class="col-xs-12">
-                        <div class="accordion" id="recordtype-accordion">
-                            <div class="card">
-                                <div class="card-header" id="recordtype-dropdown-link">
-                                    <h5 class="mb-0">
-                                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#recordtype-dropdown">
-                                            Record Types
-                                        </button>
-                                    </h5>
-                                </div>
-                                <div id="recordtype-dropdown" class="collapse show" data-parent="#recordtype-accordion">
-                                    <div class="card-body">
-                                        <select name="record_type" id="recordtype-options"></select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xs-12">
-                        <div class="accordion" id="filter-accordion"></div>
-                    </div>
+                    <div id="extra-filter-container"></div>
                     <br/>
                     <div class="col-xs-12 d-flex justify-content-end">
                         <button class="btn btn-outline-dark my-2 my-sm-0" id="filter-submit"
@@ -115,7 +87,8 @@
             // --------------------------------------------------------- */
 
             // Global variables.
-            var activeLayer = {};  // Currently-selected marker layer
+            var activeLayer = {},  // Currently-selected marker layer
+                activeSchemaId = '';  // Currently-selected schema
             const apiUrl = 'http://127.0.0.1:8000/api';  // URL for Ashlar instance
 
             // Make map fullscreen.
@@ -162,43 +135,128 @@
                     // and filter appropriately.
                     e.preventDefault();
 
-                    let filters = getFormFilters();
-
-                    // Record Type is filtered separate from the rest of the
-                    // filters -- retrieve its data.
-                    let recordTypeId = $('#recordtype-options').val();
-                    let currentSchemaId = $(`.recordtype-option[value="${recordTypeId}"]`).attr('data-schema');
-
-                    // Update filters for the selected RecordType.
-                    updateFilters(currentSchemaId);
-
-                    // If a layer is currently active, remove it from the map.
-                    if (Object.keys(activeLayer).length !== 0 && map.hasLayer(activeLayer)) {
-                        map.removeLayer(activeLayer);
-                    }
-
-                    // Generate query parameters and run the query.
-                    let queryParams = {
-                        jsonb: filters,
-                        record_type: recordTypeId
-                    };
-
-                    queryRecords(queryParams);
+                    submitForm();
                 });
             }
 
-            function getFormFilters() {
+            function submitForm(readFilters = true) {
+                // Submit the form data to query for Records. If `readFilters` is
+                // falsey, the query will skip additional filters, just looking
+                // at Record Type.
+
+                let recordTypeId = $('#recordtype-options').val();
+                let schemaId = $(`.recordtype-option[value="${recordTypeId}"]`).attr('data-schema');
+
+                // Update filters for the selected RecordType.
+                if (schemaId !== activeSchemaId) {
+                    activeSchemaId = schemaId;
+                    updateFilters(schemaId);
+                }
+
+                // If a layer is currently active, remove it from the map.
+                if (Object.keys(activeLayer).length !== 0 && map.hasLayer(activeLayer)) {
+                    map.removeLayer(activeLayer);
+                }
+
+                // Generate query parameters and run the query.
+                let queryParams = {
+                    record_type: recordTypeId
+                };
+
+                // If the user asked to read filters, retrieve them from the form
+                // and add their data to the query.
+                if (readFilters) {
+                    let filters = getJsonbFilters();
+                    queryParams.jsonb = filters;
+                }
+
+                queryRecords(queryParams);
+            }
+
+            function getJsonbFilters() {
                 // Read filters from the form and return them as an object
                 // that we can use to query Ashlar.
                 let filters = {};
-                $('#filter-form').serializeArray().forEach((field) => {
+                let formValues = $('#filter-form').serializeArray();
+
+                formValues.forEach((field) => {
                     // Form data gets encoded as an array of objects storing
                     // the name and value of the field. Process that object
                     // into a JSON object suitable for querying.
                     let name = field.name,
                         value = field.value;
 
-                    if (value) {};
+                    let filterableField = name !== 'record_type';
+
+                    if (value && filterableField) {
+                        // Field names are namespaced like so:
+                        //
+                        // 'schemaName#fieldName#queryRule`
+                        //
+                        // e.g.:
+                        //
+                        // 'incidentDetails#Select List#select'
+                        //
+                        // Parse this structure to format the query.
+                        let fieldParts = name.split('#');
+                        let schemaName = fieldParts[0],
+                            fieldName = fieldParts[1],
+                            queryRule = fieldParts[2];
+
+                        // If this is the first iteration in the loop, there
+                        // won't yet be a key for the schema in the filter object.
+                        if (!filters[schemaName]) {
+                            filters[schemaName] = {};
+                        }
+
+                        // If this is a number query (or another type of field
+                        // that accepts multiple inputs, like a multiselect)
+                        // the nested query object may already exist, so check
+                        // for it before creating it.
+                        let nestedQuery = {};
+                        if (!filters[schemaName][fieldName]) {
+                            filters[schemaName][fieldName] = {};
+                        } else {
+                            nestedQuery = filters[schemaName][fieldName];
+                        }
+
+                        // Construct the actual query.
+                        switch(queryRule) {
+                            case 'text':
+                                nestedQuery = {
+                                    '_rule_type': 'containment',
+                                    'contains': [
+                                        value
+                                    ]
+                                };
+                                break;
+
+                            case 'select':
+                                // Select can have multiple attributes, so
+                                // if that's the case, append to the containment
+                                // array.
+                                if (nestedQuery.contains) {
+                                    nestedQuery.contains.push(value);
+                                } else {
+                                    nestedQuery._rule_type = 'containment_multiple';
+                                    nestedQuery.contains = [value];
+                                }
+                                break;
+
+                            case 'min':
+                                nestedQuery._rule_type = 'intrange';
+                                nestedQuery.min = value;
+                                break;
+
+                            case 'max':
+                                nestedQuery._rule_type = 'intrange';
+                                nestedQuery.max = value;
+                                break;
+                        }
+
+                        // Reassign the updated nested query to the proper field.
+                        filters[schemaName][fieldName] = nestedQuery;
+                    }
                 });
 
                 return filters;
@@ -208,20 +266,53 @@
                 // Load filters for a given schema based on its `schemaId`.
 
                 // Always clear existing filters.
-                $('#filter-accordion').html('');
+                $('#extra-filter-container').html('');
 
                 // Retrieve the schema to figure out what fields need to be displayed
                 $.getJSON(`${apiUrl}/recordschemas/${schemaId}`)
                     .done((schema) => {
+                        // Given a schema object, return a map of fields that are
+                        // filterable.
+                        let definitions = {};
+                        if (schema.schema && schema.schema.definitions) {
+                            definitions = schema.schema.definitions;
+                        }
 
-                        let filterables = getFilterables(schema);
+                        let isFilterable = function(val) { return val.isSearchable; };
 
-                        Object.keys(filterables).forEach((key) => {
-                            let filterable = filterables[key];
+                        let schemaFilters = {};
+                        Object.keys(definitions).forEach((key) => {
+                            let schema = definitions[key];
+                            schemaFilters[schema.title] = {};
 
-                            let widget = getFilterWidget(key, filterable);
+                            Object.keys(schema.properties).forEach((prop) => {
+                                let property = schema.properties[prop];
+                                if (isFilterable(property)) {
+                                    // merge in `multiple` to keep track of the type of containment
+                                    // (key + # + prop is necessary to namespace the filter ids)
+                                    schemaFilters[schema.title][key + '#' + prop] = Object.assign({}, property, {multiple: schema.multiple}); }
+                            });
+                        });
 
-                            $('#filter-accordion').append(widget);
+                        Object.keys(schemaFilters).forEach((schemaName) => {
+                            // Create a new accordion to contain filters for this schema.
+                            $('#extra-filter-container').append(`
+                                <div class="col-xs-12" style="margin-top:5px;">
+                                    <h5>Filter by ${schemaName}</h5>
+                                    <hr />
+                                    <div class="accordion" name="${schemaName}"></div>
+                                </div>
+                            `);
+
+                            let filterables = schemaFilters[schemaName];
+
+                            Object.keys(filterables).forEach((filterName) => {
+                                let filterable = filterables[filterName];
+
+                                let widget = getFilterWidget(filterName, filterable);
+
+                                $(`.accordion[name="${schemaName}"]`).append(widget);
+                            });
                         });
 
                   }).fail((err) => {
@@ -229,34 +320,11 @@
                   });
             }
 
-            function getFilterables(schema) {
-                // Given a schema object, return a map of fields that are
-                // filterable.
-                let definitions = {};
-                if (schema.schema && schema.schema.definitions) {
-                    definitions = schema.schema.definitions;
-                }
-
-                let isFilterable = function(val) { return val.isSearchable; };
-                let filterables = {};
-                Object.keys(definitions).forEach((key) => {
-                    let schema = definitions[key];
-                    Object.keys(schema.properties).forEach((prop) => {
-                        let property = schema.properties[prop];
-                        // merge in `multiple` to keep track of the type of containment
-                        if (isFilterable(property)) {
-                            filterables[prop] = Object.assign({}, property, {multiple: schema.multiple});
-                        }
-                    });
-                });
-
-                return filterables;
-            }
-
             function getFilterWidget(key, filterable) {
                 // Given a `filterable` object and its name `key`,
                 // return an HTML element for the filter widget.
                 let num = filterable.propertyOrder;
+                let label = key.split('#')[1];  // Extract the field name from the namespaced key
                 let elem = `
                     <div class="card">
                         <div class="card-header">
@@ -264,7 +332,7 @@
                                 <button class="btn btn-link" type="button"
                                         data-toggle="collapse"
                                         data-target="#filter-dropdown-${num}">
-                                    ${key}
+                                    ${label}
                                 </button>
                             </h5>
                         </div>
@@ -272,53 +340,67 @@
                             <div class="card-body">
                 `;
 
-
-                if (filterable.fieldType === 'number') {
-                    // Number types should produce range dropdowns
-                    elem += `
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            From
-                                        </div>
-                                    </div>
-                                    <input type="text" class="form-control"
-                                            name="min" placeholder="Minimum number" />
-                                </div>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            To
-                                        </div>
-                                    </div>
-                                    <input type="text" class="form-control"
-                                            name="max" placeholder="Maxium number" />
-                                </div>
-                    `
-
-                } else if (filterable.fieldType === 'selectlist') {
-                    // Select list types need to provide options for
-                    // selection
-                    elem += `
-                                <div class="form-group">
-                                    <select name="select" class="selectpicker form-control"
-                                            multiple>
-                    `;
-
-                    for (let opt of filterable.enum) {
+                switch (filterable.fieldType) {
+                    case 'number':
+                        // Number types should produce range dropdowns.
                         elem += `
-                                        <option value="${opt}">${opt}</option>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text">
+                                                From
+                                            </div>
+                                        </div>
+                                        <input type="text" class="form-control"
+                                            name="${key}#min" placeholder="Minimum number" />
+                                    </div>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text">
+                                                To
+                                            </div>
+                                        </div>
+                                        <input type="text" class="form-control"
+                                            name="${key}#max" placeholder="Maxium number" />
+                                    </div>
                         `;
-                    }
+                        break;
 
-                    elem += `
-                                    </select>
-                                </div>
-                    `;
+                    case 'selectlist':
+                        // Select list types need to provide options for
+                        // selection.
+                        elem += `
+                                    <div class="form-group">
+                                        <select name="${key}#select" class="selectpicker form-control"
+                                                multiple>
+                        `;
 
-                } else {
-                    // No other types need elements, so break.
-                    return;
+                        for (let opt of filterable.enum) {
+                            elem += `
+                                            <option value="${opt}">${opt}</option>
+                            `;
+                        }
+
+                        elem += `
+                                        </select>
+                                    </div>
+                        `;
+                        break;
+
+                    case 'text':
+                        // Text fields require a search box for filtering.
+                        elem += `
+                            <div class="form-inline my-2 my-lg-0">
+                                <input class="form-control mr-sm-2" type="search"
+                                    placeholder="Search for keywords" aria-label="Search for keywords"
+                                    name="${key}#search" />
+                            </div>
+                        `;
+                        break;
+
+                    default:
+                        // No other types need elements, so exit the function
+                        // altogether, returning undefined.
+                        return;
                 }
 
                 elem += `
@@ -400,6 +482,11 @@
                             `;
                             $('#recordtype-options').append(rtOpt);
                         }
+
+                        // Reload all records and filters when the recordtype
+                        // changes.
+                        let readFilters = false;
+                        $('#recordtype-options').change((e) => { submitForm(readFilters) });
 
                         // Once the RecordTypes have been populated and the map
                         // is ready, select the first available RecordType for display.
