@@ -167,7 +167,7 @@
                 // and add their data to the query.
                 if (readFilters) {
                     let filters = getJsonbFilters();
-                    queryParams.jsonb = filters;
+                    queryParams.jsonb = JSON.stringify(filters);
                 }
 
                 queryRecords(queryParams);
@@ -238,7 +238,7 @@
                                 if (nestedQuery.contains) {
                                     nestedQuery.contains.push(value);
                                 } else {
-                                    nestedQuery._rule_type = 'containment_multiple';
+                                    nestedQuery._rule_type = 'containment';
                                     nestedQuery.contains = [value];
                                 }
                                 break;
@@ -392,7 +392,7 @@
                             <div class="form-inline my-2 my-lg-0">
                                 <input class="form-control mr-sm-2" type="search"
                                     placeholder="Search for keywords" aria-label="Search for keywords"
-                                    name="${key}#search" />
+                                    name="${key}#text" />
                             </div>
                         `;
                         break;
