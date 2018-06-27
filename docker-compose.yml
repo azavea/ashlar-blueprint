@@ -1,16 +1,32 @@
 version: '3'
 
 services:
+
   db:
-    image: mdillon/postgis:10-alpine
-  ashlar-server:
-    build: ./ashlar-server
+    image: quay.io/azavea/postgis:2.4-postgres10.3-slim
+
+  ashlar:
+    build: ./ashlar
     depends_on:
       - db
     volumes:
-      - ./ashlar-server:/opt/ashlar-server
+      - ./ashlar:/opt/ashlar
     entrypoint: python
     command: manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
-    env_file: ./ashlar-server/.env
+    env_file: ./ashlar/.env
+    environment:
+      - PYTHONUNBUFFERED=0  # Do not buffer output (allows Docker to stream stdout)
+
+  editor:
+    build: ./schema_editor
+    depends_on:
+      - ashlar
+    volumes:
+      - ./schema_editor:/opt/schema_editor
+    ports:
+      - "9000:9000"
+      - "35731:35731"
+    entrypoint: grunt
+    command: serve

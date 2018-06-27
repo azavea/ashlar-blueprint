@@ -1,0 +1,2 @@
+git+https://github.com/jeancochrane/ashlar.git@update-dependencies#egg=ashlar
+django-cors-headers==2.2.0

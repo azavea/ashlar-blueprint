@@ -1,1 +1,0 @@
-git+https://github.com/jeancochrane/ashlar.git@update-dependencies#egg=ashlar
