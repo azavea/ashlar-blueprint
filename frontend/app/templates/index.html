@@ -25,35 +25,60 @@
     <nav class="navbar navbar-expand-md navbar-reverse navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">Ashlar Public Frontend</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse"
-                    data-target="#navbar-content" aria-controls="navbar-content"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbar-content">
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown"
-                           role="button" aria-haspopup="true" aria-expanded="false"
-                           id="recordtype-dropdown-link">
-                            Record Types
-                        </a>
-                        <div class="dropdown-menu" id="recordtype-dropdown"
-                             aria-labelledby="recordtype-dropdown-link"></div>
-                    </li>
-                </ul>
-                <form class="form-inline my-2 my-lg-0">
-                    <input class="form-control mr-sm-2" type="search" placeholder="Filter by search" aria-label="Filter by search">
-                    <button class="btn btn-outline-dark my-2 my-sm-0" type="submit">Search</button>
-                </form>
-            </div>
         </div>
     </nav>
 
     <div class="container-fluid">
         <div class="row">
-            <div id="map"></div>
+            <div class="col-sm-4 sidebar" style="margin-top:10px">
+                <h4>Filters</h4>
+                <hr/>
+                <form id="filter-form">
+                    <div class="col-xs-12">
+                        <div class="form-inline my-2 my-lg-0">
+                            <input class="form-control mr-sm-2" type="search"
+                                placeholder="Filter by search" aria-label="Filter by search"
+                                name="search">
+                            <button class="btn btn-outline-dark my-2 my-sm-0" id="search-submit"
+                                    type="submit">
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="col-xs-12">
+                        <div class="accordion" id="recordtype-accordion">
+                            <div class="card">
+                                <div class="card-header" id="recordtype-dropdown-link">
+                                    <h5 class="mb-0">
+                                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#recordtype-dropdown">
+                                            Record Types
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="recordtype-dropdown" class="collapse show" data-parent="#recordtype-accordion">
+                                    <div class="card-body">
+                                        <div id="recordtype-options" data-toggle="buttons"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12">
+                        <div class="accordion" id="filter-accordion"></div>
+                    </div>
+                    <br/>
+                    <div class="col-xs-12 d-flex justify-content-end">
+                        <button class="btn btn-outline-dark my-2 my-sm-0" id="filter-submit"
+                                type="submit">
+                            Submit
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-sm-8">
+                <div id="map"></div>
+            </div>
         </div>
     </div>
     {% endblock %}
@@ -126,22 +151,31 @@
                     for (let recordtype of recordtypes) {
                         // Add a filter for this RecordType to the navbar
                         let navItem = `
-                            <a class="dropdown-item filter-recordtype"
-                               id="${recordtype.uuid}"
-                               data-schema="${recordtype.current_schema}"
-                               href="#">
-                                ${recordtype.plural_label}
-                            </a>
+                            <label class="btn btn-secondary filter-recordtype-container">
+                                <input type="radio" name="recordtype"
+                                       class="filter-recordtype"
+                                       id="${recordtype.uuid}"
+                                       data-schema="${recordtype.current_schema}">
+                                    ${recordtype.plural_label}
+                                </input>
+                            </label>
                         `;
-                        $('#recordtype-dropdown').append(navItem);
+                        $('#recordtype-options').append(navItem);
                     }
 
                     // Allow user to toggle layers from the navbar
-                    $('.filter-recordtype').click(function(e) {
+                    $('.filter-recordtype-container').click(function(e) {
                         e.preventDefault();
 
-                        const recordTypeId = $(this).attr('id');
-                        const currentSchemaId = $(this).attr('data-schema');
+                        let recordTypeId = '',
+                            currentSchemaId = '';
+                        if ($(this).hasClass('filter-recordtype')) {
+                            recordTypeId = $(this).attr('id');
+                            currentSchemaId = $(this).attr('data-schema');
+                        } else {
+                            recordTypeId = $(this).find('.filter-recordtype').attr('id');
+                            currentSchemaId = $(this).find('.filter-recordtype').attr('data-schema');
+                        }
 
                         // Update filters for the current selection
                         updateFilters(currentSchemaId);
@@ -212,7 +246,7 @@
                     });
                     // Once the navbar is prepared, select the first layer for display
                     map.whenReady(() => {
-                        $('.filter-recordtype').first().click();
+                        $('.filter-recordtype-container').first().click();
                     });
               }).fail((err) => {
                     alert(err);
@@ -221,7 +255,7 @@
             // Load filters
             function updateFilters(schemaId) {
                 // Clear existing filters
-                $('.filterable').remove();
+                $('#filter-accordion').html('');
 
                 // Retrieve the schema to figure out what fields need to be displayed
                 $.getJSON(`${apiUrl}/recordschemas/${schemaId}`)
@@ -246,24 +280,43 @@
 
                         Object.keys(filterables).forEach((key) => {
                             let filterable = filterables[key];
+                            let num = filterable.propertyOrder;
                             let elem = `
-                                <ul class="navbar-nav filterable">
-                                    <li class="nav-item dropdown">
-                                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown"
-                                        role="button" aria-haspopup="true" aria-expanded="false">
-                                            ${key}
-                                        </a>
-                                        <div class="dropdown-menu">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">
+                                            <button class="btn btn-link" type="button"
+                                                    data-toggle="collapse"
+                                                    data-target="#filter-dropdown-${num}">
+                                                ${key}
+                                            </button>
+                                        </h5>
+                                    </div>
+                                    <div id="filter-dropdown-${num}" class="collapse">
+                                        <div class="card-body">
                             `;
+
 
                             if (filterable.fieldType === 'number') {
                                 // Number types should produce range dropdowns
                                 elem += `
-                                            <div class="form-group">
-                                                <label for="min">From</label>
-                                                <input name="min" placeholder="minimum" />
-                                                <label for="max">To</label>
-                                                <input name="max" placeholder="maximum" />
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <div class="input-group-text">
+                                                        From
+                                                    </div>
+                                                </div>
+                                                <input type="text" class="form-control"
+                                                       name="min" placeholder="Minimum number" />
+                                            </div>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <div class="input-group-text">
+                                                        To
+                                                    </div>
+                                                </div>
+                                                <input type="text" class="form-control"
+                                                       name="max" placeholder="Maxium number" />
                                             </div>
                                 `
 
@@ -294,15 +347,23 @@
 
                             elem += `
                                         </div>
-                                    </li>
-                                </ul>
+                                    </div>
+                                </div>
                             `;
 
-                            $('#navbar-content').append(elem);
+                            $('#filter-accordion').append(elem);
                         });
+
+                        bindFilterEvents();
+
                   }).fail((err) => {
                         console.log(err);
                   });
+            }
+
+            function bindFilterEvents() {
+                // Bind events to filters. Runs once the filters have been
+                // initialized.
             }
 
         });
