@@ -14,6 +14,12 @@
                 readOnly: 'public',
                 readWrite: 'analyst'
             }
+        },
+        record: {
+            limit: 50
+        },
+        localization: {
+            timeZone: 'America/New_York'
         }
     };
 

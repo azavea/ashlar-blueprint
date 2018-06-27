@@ -225,6 +225,101 @@
             ]
         };
 
+        var RecordList = [
+            {
+                'uuid': '35d74ce1-7b08-486b-b791-da9bc1e93cfb',
+                'archived': false,
+                'data': {
+                    'Person': [],
+                    'Crime Details': {
+                        'County': 'Philadelphia',
+                        'Description': 'First test',
+                        'District': '13',
+                        '_localId': 'e116f30b-e493-4d57-9797-a901abddf7d5'
+                    },
+                    'Vehicle': []
+                },
+                'created': '2015-07-30T17:36:29.483160Z',
+                'modified': '2015-07-30T17:36:29.483206Z',
+                'occurred_from': '2015-07-30T17:36:29.263000Z',
+                'occurred_to': '2015-07-30T17:36:29.263000Z',
+                'geom': {
+                    'type': 'Point',
+                    'coordinates': [
+                        25.0,
+                        75.0
+                    ]
+                },
+                'location_text': '',
+                'schema': 'db446730-3d6d-40b3-8699-0027205d54ed'
+            },
+            {
+                'uuid': '57dd6700-6e87-4110-ab11-dc7eefc50c96',
+                'archived': false,
+                'data': {
+                    'Person': [
+                        {
+                            'Last name': 'John',
+                            'First name': 'Smith',
+                            'Street address': '3 Test St.',
+                            '_localId': '4cde1cc9-2cd2-487b-983d-ae1de1d6198c'
+                        },
+                        {
+                            'Last name': 'Jane',
+                            'First name': 'Doe',
+                            'Street address': '4 Test Ln.',
+                            '_localId': 'b383cf8c-95f2-46de-aaed-d05115db8d4d'
+                        }
+                    ],
+                    'Crime Details': {
+                        'County': 'Philadelphia',
+                        'Description': 'Second test',
+                        'District': '14',
+                        '_localId': '2382abab-0958-4aef-a1f6-ccca379ae9a4'
+                    },
+                    'location_text': '',
+                    'schema': 'db446730-3d6d-40b3-8699-0027205d54ed'
+                }
+            },
+            {
+                "uuid": "80621b6f-4036-45c5-940b-796f23ea0185",
+                "data": {
+                    "interventionDetails": {
+                        "Type": "Intersection - Roundabout",
+                        "_localId": "dddb643b-18ae-4b3d-8eba-e3d59c7fb14f"
+                    }
+                },
+                "created": "2016-02-02T19:11:00.479893Z",
+                "modified": "2016-02-02T19:11:00.479924Z",
+                "occurred_from": "2016-02-02T06:11:00.395264Z",
+                "occurred_to": "2016-02-02T06:11:00.395273Z",
+                "geom": {
+                    "type": "Point",
+                    "coordinates": [
+                        121.03756381620197,
+                        14.644203676970669
+                    ]
+                },
+                "location_text": null,
+                "city": null,
+                "city_district": null,
+                "county": null,
+                "neighborhood": null,
+                "road": null,
+                "state": null,
+                "weather": null,
+                "light": null,
+                "schema": "d71e6475-e328-41d3-8e1f-556ab4145129"
+            }
+        ];
+
+        var RecordResponse = {
+            'count': 3,
+            'next': null,
+            'previous': null,
+            'results': RecordList
+        };
+
         var module = {
             BlackSpotConfigResponse: BlackSpotConfigResponse,
             GeographyResponse: GeographyResponse,
@@ -237,7 +332,8 @@
             RecordTypeResponse: RecordTypeResponse,
             UserInfoResponse: UserInfoResponse,
             AdminUserInfoResponse: AdminUserInfoResponse,
-            UsersResponse: UsersResponse
+            UsersResponse: UsersResponse,
+            RecordResponse: RecordResponse
         };
         return module;
     }

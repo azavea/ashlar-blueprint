@@ -24,6 +24,7 @@
     "angular": false,
     "browser": false,
     "inject": false,
+    "L": false,
     "jsonSchemaV4": true,
     "jjv": true,
     "readJSON": true

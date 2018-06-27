@@ -14,7 +14,8 @@
 
     angular.module('ase.views.sidebar', [
         'ui.router',
-        'ase.views.recordtype'
+        'ase.views.recordtype',
+        'ase.views.record'
     ]).config(StateConfig);
 
 })();
