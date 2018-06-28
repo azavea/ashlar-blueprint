@@ -34,7 +34,10 @@ then
         init_db
         docker-compose run --rm ashlar manage.py migrate
 
-        # Stop the database service.
-        docker-compose stop db
+        # Import sample data.
+        docker-compose run --rm loaddata
+
+        # Stop all running services.
+        docker-compose stop
     fi
 fi

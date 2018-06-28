@@ -31,8 +31,8 @@
         }
 
         function loadRecordSchema(recordTypeUuid) {
-            RecordTypes.query({ uuid: recordTypeUuid }).$promise.then(function (result) {
-                var recordType = result[0];
+            RecordTypes.get({ id: recordTypeUuid }).$promise.then(function (result) {
+                var recordType = result;
                 if (recordType) {
                     ctl.recordType = recordType;
                     /* jshint camelcase: false */
@@ -65,10 +65,13 @@
 
             var params = {
                 offset: newOffset,
-                limit: ASEConfig.record.limit
+                limit: ASEConfig.record.limit,
+                /* jshint camelcase: false */
+                record_type: ctl.recordType.uuid
+                /* jshint camelcase: true */
             };
 
-            return Records.get(params).$promise
+            Records.get(params).$promise
             .then(function(records) {
                 ctl.records = records;
                 ctl.currentOffset = newOffset;

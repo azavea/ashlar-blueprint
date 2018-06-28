@@ -19,14 +19,17 @@ local development):
 
 ```
 cp ./ashlar/.env.example ./ashlar/.env
+cp ./frontend/.env.example ./frontend/.env
 ```
 
-Build the containers, run migrations, and install NPM modules with the `update`
-script:
+Run the `update` script to make sure your containers are up to date:
 
 ```console
 ./scripts/update
 ```
+
+This script will also load some sample data into Ashlar that you can play around
+with.
 
 # Developing
 
@@ -38,8 +41,9 @@ Run development servers with the `server` script:
 ./scripts/server
 ```
 
-The Ashlar instance will be accessible on `localhost:8000` and the schema editor
-will be accessible on `localhost:9000`. Both should reload in realtime
+The Ashlar instance will be accessible on `localhost:8000`, the schema editor
+will be accessible on `localhost:9000`, and the frontend for the 
+app will be accessible on `localhost:4567`. All three should reload in realtime
 as you edit files.
 
 You can choose to run only the services you need 
@@ -51,6 +55,9 @@ by passing the `server` script an optional argument:
 
 # Run only the schema editor
 ./scripts/server editor
+
+# Run only the frontend
+./scripts/server frontend
 ```
 
 You can also run custom commands in the containers using the `server` script:

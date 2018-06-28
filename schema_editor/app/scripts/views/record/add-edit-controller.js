@@ -149,7 +149,7 @@
         /* Loads the right schema:
          * - If there's a record, loads the latest schema for the record's type
          *   (edit mode)
-         * - Otherwise, checks for a record type that can be used to find aa schema
+         * - Otherwise, checks for a record type that can be used to find a schema
          *   (add mode)
          * - If no record type loads (e.g. if someone has navigated to the view
          *   improperly), sets an error and returns a rejected promise.
@@ -351,7 +351,7 @@
 
                 Records.update(patchData, function (record) {
                     $log.debug('Deleted record with uuid: ', record.uuid);
-                    $state.go('record.list');
+                    $state.go('record.list', { recordtype: ctl.recordType.uuid });
                 }, function (error) {
                     $log.debug('Error while deleting record:', error);
                     showErrorNotification([
@@ -437,7 +437,7 @@
                 if (ctl.isSecondary) {
                     $state.go('map');
                 } else {
-                    $state.go('record.list');
+                    $state.go('record.list', { recordtype: ctl.recordType.uuid });
                 }
             }, function (error) {
                 $log.debug('Error while creating record:', error);
