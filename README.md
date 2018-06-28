@@ -22,12 +22,14 @@ cp ./ashlar/.env.example ./ashlar/.env
 cp ./frontend/.env.example ./frontend/.env
 ```
 
-Build the containers, run migrations, and install NPM modules with the `update`
-script:
+Run the `update` script to make sure your containers are up to date:
 
 ```console
 ./scripts/update
 ```
+
+This script will also load some sample data into Ashlar that you can play around
+with.
 
 # Developing
 
