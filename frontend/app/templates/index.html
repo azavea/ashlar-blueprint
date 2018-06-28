@@ -89,7 +89,9 @@
             // Global variables.
             var activeLayer = {},  // Currently-selected marker layer
                 activeSchemaId = '';  // Currently-selected schema
-            const apiUrl = 'http://127.0.0.1:8000/api';  // URL for Ashlar instance
+            const apiUrl = '{{ ASHLAR_API_URL }}';  // URL for Ashlar instance
+
+            console.log(apiUrl);
 
             // Make map fullscreen.
             $(window).resize(() => {
