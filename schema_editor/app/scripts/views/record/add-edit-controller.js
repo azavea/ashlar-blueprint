@@ -351,7 +351,7 @@
 
                 Records.update(patchData, function (record) {
                     $log.debug('Deleted record with uuid: ', record.uuid);
-                    $state.go('record.list');
+                    $state.go('record.list', { recordtype: ctl.recordType.uuid });
                 }, function (error) {
                     $log.debug('Error while deleting record:', error);
                     showErrorNotification([
@@ -437,7 +437,7 @@
                 if (ctl.isSecondary) {
                     $state.go('map');
                 } else {
-                    $state.go('record.list');
+                    $state.go('record.list', { recordtype: ctl.recordType.uuid });
                 }
             }, function (error) {
                 $log.debug('Error while creating record:', error);
